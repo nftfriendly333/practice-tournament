@@ -2559,6 +2559,10 @@ async function doRegister(){
 
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
+    // Show countdown gate and scroll to top
+    var gate = document.getElementById('gate');
+    if(gate) gate.classList.remove('hidden');
+    window.scrollTo(0,0);
     var msg = document.getElementById('cd-msg');
     if(msg) msg.textContent='\u2713 Account created! 10,000 PvE loaded. Welcome, '+user+'.';
   }catch(e){
@@ -2586,6 +2590,10 @@ async function doLogin(){
     localStorage.setItem('tt_wallet',   myWalletAddress);
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
+    // Show countdown gate and scroll to top
+    var gate = document.getElementById('gate');
+    if(gate) gate.classList.remove('hidden');
+    window.scrollTo(0,0);
     document.getElementById('cd-msg').textContent='\u2713 Signed in as '+myUsername+'. Waiting for open\u2026';
   }catch(e){err.textContent='Login failed: '+(e&&e.message?e.message:'check console');console.error(e);}
   btn.disabled=false;btn.textContent='Sign In \u2192';
