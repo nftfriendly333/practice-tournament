@@ -498,6 +498,7 @@
     <div class="gate-btn-row">
       <button class="gate-btn gate-btn-primary" onclick="openAuthModal('register')">Create Account</button>
       <button class="gate-btn gate-btn-secondary" onclick="openAuthModal('login')">Sign In</button>
+    </div>
   </div>
 </div>
 <div class="auth-overlay" id="auth-overlay">
@@ -571,9 +572,7 @@
   <div class="tab" onclick="showPage('leaderboard')">&#127942; Board</div>
   <div class="tab" onclick="showPage('history')">&#128220; History</div>
 </div>
-  <div class="tab" onclick="showPage('portfolio')">📦 Positions</div>
-  <div class="tab" onclick="showPage('history')">📜 History</div>
-</div>
+
 
 <div id="page-market" class="page active">
   <div class="main">
@@ -2464,8 +2463,20 @@ function onTournamentOpen(){
     openAuthModal('login');
   }
 }
-function openAuthModal(panel){switchAuthPanel(panel);document.getElementById('auth-overlay').classList.add('open');}
-function closeAuthModal(){document.getElementById('auth-overlay').classList.remove('open');}
+function openAuthModal(panel){
+  switchAuthPanel(panel);
+  // Clear any previous errors
+  document.getElementById('login-err').textContent='';
+  document.getElementById('reg-err').textContent='';
+  document.getElementById('auth-overlay').classList.add('open');
+}
+function closeAuthModal(){
+  document.getElementById('auth-overlay').classList.remove('open');
+  // Always ensure gate is showing after modal closes
+  var gate = document.getElementById('gate');
+  if(gate) gate.classList.remove('hidden');
+  window.scrollTo(0,0);
+}
 function switchAuthPanel(panel){
   document.getElementById('auth-panel-login').style.display=panel==='login'?'':'none';
   document.getElementById('auth-panel-register').style.display=panel==='register'?'':'none';
@@ -2559,10 +2570,6 @@ async function doRegister(){
 
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
-    // Show countdown gate and scroll to top
-    var gate = document.getElementById('gate');
-    if(gate) gate.classList.remove('hidden');
-    window.scrollTo(0,0);
     var msg = document.getElementById('cd-msg');
     if(msg) msg.textContent='\u2713 Account created! 10,000 PvE loaded. Welcome, '+user+'.';
   }catch(e){
@@ -2590,10 +2597,6 @@ async function doLogin(){
     localStorage.setItem('tt_wallet',   myWalletAddress);
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
-    // Show countdown gate and scroll to top
-    var gate = document.getElementById('gate');
-    if(gate) gate.classList.remove('hidden');
-    window.scrollTo(0,0);
     document.getElementById('cd-msg').textContent='\u2713 Signed in as '+myUsername+'. Waiting for open\u2026';
   }catch(e){err.textContent='Login failed: '+(e&&e.message?e.message:'check console');console.error(e);}
   btn.disabled=false;btn.textContent='Sign In \u2192';
