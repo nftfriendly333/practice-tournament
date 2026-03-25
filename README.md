@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -881,7 +880,7 @@ ITEMS.forEach(function(item) {
 
 // ── PRICE ENGINE ─────────────────────────────────────────────────────────────
 function updatePrices() {
-  // Price updates are now handled by hostTick (host) or clientSync (clients)
+  // Price updates handled by localTick with seeded RNG
   // This function is kept as a no-op for compatibility
 }
 
@@ -1006,7 +1005,7 @@ function checkPriceCeiling() {
 }
 
 function randomTrend() {
-  return (Math.random() - 0.5) * 0.0012; // -0.0006 to +0.0006
+  return (Math.random() - 0.5) * 0.0012;
 }
 
 function shiftTrends() {
@@ -2193,94 +2192,105 @@ function renderHistory() {
   listEl.innerHTML = rows;
 }
 
-// ── SHARED MARKET STATE ──────────────────────────────────────────────────────
-var isHost = false;
-var hostCheckInterval = null;
-var marketSyncInterval = null;
-var hostTickInterval = null;
-var hostElectionRunning = false;
-var MARKET_KEY = 'market_state';
+// ── MARKET ENGINE: FIREBASE AS SINGLE SOURCE OF TRUTH ───────────────────────
+//
+// HOW IT WORKS:
+//   One tab becomes "primary" — it runs Math.random() and writes prices to Firebase.
+//   All other tabs (including the primary) read prices FROM Firebase every tick.
+//   Late joiners get the full current state on first read.
+//   If primary goes away, next tab to check claims the role.
+//
+var MARKET_KEY        = 'mkt';   // short key = less Firebase bandwidth
+var _primaryInterval  = null;
+var _readerInterval   = null;
+var _renewInterval    = null;
+var _isPrimary        = false;
+var _primaryClaimed   = false;
 
-async function electHost() {
-  // Prevent concurrent elections
-  if (hostElectionRunning) return;
-  hostElectionRunning = true;
+// ── Entry point called from enterGame() ──────────────────────────────────────
+function startMarketEngine() {
+  claimPrimary();
+}
+
+// ── Primary election ─────────────────────────────────────────────────────────
+async function claimPrimary() {
+  if (_primaryClaimed) return;
   try {
-    var existing = await fbGet(MARKET_KEY + '/host');
-    var now = Date.now();
-    if (!existing || !existing.claimedAt || (now - existing.claimedAt) > 8000) {
-      await fbSet(MARKET_KEY + '/host', { username: myUsername, claimedAt: now });
-      var check = await fbGet(MARKET_KEY + '/host');
-      if (check && check.username === myUsername) {
-        if (!isHost) {
-          isHost = true;
-          console.log('Host role claimed by', myUsername);
-          startHostEngine();
-        }
-        hostElectionRunning = false;
+    var slot = await fbGet(MARKET_KEY + '/primary');
+    var now  = Date.now();
+    var stale = !slot || !slot.ts || (now - slot.ts) > 7000;
+    if (stale) {
+      // Write our claim
+      await fbSet(MARKET_KEY + '/primary', { who: myUsername, ts: now });
+      // Small delay then verify we won
+      await new Promise(function(r){ setTimeout(r, 300); });
+      var verify = await fbGet(MARKET_KEY + '/primary');
+      if (verify && verify.who === myUsername) {
+        becomePrimary();
         return;
       }
     }
-    // Not host — ensure client sync is running
-    if (isHost) {
-      // Lost host role — stop host tick, start client sync
-      isHost = false;
-      if (hostTickInterval) { clearInterval(hostTickInterval); hostTickInterval = null; }
-      startClientSync();
-    }
   } catch(e) {
-    if (!isHost) {
-      isHost = true;
-      startHostEngine();
-    }
+    // Firebase unreachable — become primary locally
+    becomePrimary();
+    return;
   }
-  hostElectionRunning = false;
+  becomeReader();
 }
 
-function startHostEngine() {
-  // Clear any existing tick interval before creating a new one
-  if (hostTickInterval) clearInterval(hostTickInterval);
-  if (marketSyncInterval) { clearInterval(marketSyncInterval); marketSyncInterval = null; }
-  hostTickInterval = setInterval(hostTick, TICK_MS);
-  // Renew host claim every 5s
-  if (hostCheckInterval) clearInterval(hostCheckInterval);
-  hostCheckInterval = setInterval(function() {
-    fbSet(MARKET_KEY + '/host', { username: myUsername, claimedAt: Date.now() });
-  }, 5000);
+function becomePrimary() {
+  _isPrimary = true;
+  _primaryClaimed = true;
+  console.log('[Market] Primary role claimed');
+  // Renew heartbeat every 4s
+  _renewInterval = setInterval(function() {
+    fbSet(MARKET_KEY + '/primary', { who: myUsername, ts: Date.now() });
+  }, 4000);
+  // Run price engine
+  if (_primaryInterval) clearInterval(_primaryInterval);
+  _primaryInterval = setInterval(primaryTick, TICK_MS);
+  // Also read our own writes so UI updates via same path as readers
+  if (_readerInterval) clearInterval(_readerInterval);
+  _readerInterval = setInterval(readPrices, TICK_MS + 200);
 }
 
-function startClientSync() {
-  // Clear any existing intervals before starting new ones
-  if (hostTickInterval) { clearInterval(hostTickInterval); hostTickInterval = null; }
-  if (marketSyncInterval) clearInterval(marketSyncInterval);
-  marketSyncInterval = setInterval(clientSync, TICK_MS);
-  clientSync();
-  // Check periodically if we should become host
-  if (hostCheckInterval) clearInterval(hostCheckInterval);
-  hostCheckInterval = setInterval(electHost, 6000);
+function becomeReader() {
+  _isPrimary = false;
+  _primaryClaimed = true;
+  console.log('[Market] Reader mode');
+  if (_primaryInterval) { clearInterval(_primaryInterval); _primaryInterval = null; }
+  if (_readerInterval) clearInterval(_readerInterval);
+  _readerInterval = setInterval(readPrices, TICK_MS);
+  // Periodically check if primary has gone away
+  if (_renewInterval) clearInterval(_renewInterval);
+  _renewInterval = setInterval(function() {
+    fbGet(MARKET_KEY + '/primary').then(function(slot) {
+      if (!slot || !slot.ts || (Date.now() - slot.ts) > 7000) {
+        console.log('[Market] Primary gone — attempting takeover');
+        _primaryClaimed = false;
+        claimPrimary();
+      }
+    }).catch(function(){});
+  }, 6000);
 }
 
-async function hostTick() {
+// ── Primary: compute prices and write to Firebase ────────────────────────────
+async function primaryTick() {
   tickCount++;
-  // Session trend shift
   if (tickCount >= nextShiftAt) shiftTrends();
-  // Price events
   maybeFireEvent();
-  // Compute new prices locally
   applyEventPrices();
-  var priceData = {};
+
+  var items = {};
   ITEMS.forEach(function(item) {
-    lastPrices[item.id] = item.price;
     var chg = item.price * ((Math.random() - 0.48) * item.volatility + item.trend);
     item.price = Math.max(5, Math.round((item.price + chg) * 100) / 100);
-    item.history.push(item.price);
-    if (item.history.length > MAX_HISTORY) item.history.shift();
     item.candleTickBuf.push(item.price);
     if (item.candles.length === 0 || item.candleTickBuf.length === 1) {
-      var prev = item.candles.length ? item.candles[item.candles.length - 1].c : item.price;
+      var prev = item.candles.length ? item.candles[item.candles.length-1].c : item.price;
       item.candles.push({ o: prev, h: item.price, l: item.price, c: item.price });
     } else {
-      var cur = item.candles[item.candles.length - 1];
+      var cur = item.candles[item.candles.length-1];
       cur.h = Math.max(cur.h, item.price);
       cur.l = Math.min(cur.l, item.price);
       cur.c = item.price;
@@ -2289,24 +2299,63 @@ async function hostTick() {
       item.candleTickBuf = [];
       if (item.candles.length > 60) item.candles.shift();
     }
-    priceData[item.id] = {
-      price: item.price,
-      trend: item.trend,
+    items[item.id] = {
+      price:      item.price,
+      trend:      item.trend,
       volatility: item.volatility,
-      history: item.history.slice(-MAX_HISTORY),
-      candles: item.candles.slice(-60)
+      history:    item.history.concat([item.price]).slice(-MAX_HISTORY),
+      candles:    item.candles.slice(-60)
     };
   });
-  // Broadcast to Firebase
+
+  // Write everything to Firebase atomically
   try {
-    await fbSet(MARKET_KEY + '/prices', {
-      tickCount: tickCount,
-      nextShiftAt: nextShiftAt,
+    await fbSet(MARKET_KEY + '/state', {
+      tickCount:        tickCount,
+      nextShiftAt:      nextShiftAt,
       sessionBoundaries: sessionBoundaries.slice(-60),
-      items: priceData,
-      updatedAt: Date.now()
+      items:            items,
+      ts:               Date.now()
     });
-  } catch(e) { /* broadcast failure — still run locally */ }
+  } catch(e) {
+    // Write failed — update local UI anyway
+    applyStateLocally({ tickCount: tickCount, items: items, nextShiftAt: nextShiftAt, ts: Date.now() });
+  }
+}
+
+// ── Reader (and primary): apply Firebase state to local ITEMS ────────────────
+async function readPrices() {
+  try {
+    var state = await fbGet(MARKET_KEY + '/state');
+    if (!state || !state.items) return;
+    // Reject stale data older than 10s
+    if (Date.now() - state.ts > 10000) return;
+    applyStateLocally(state);
+  } catch(e) { /* keep last state */ }
+}
+
+function applyStateLocally(state) {
+  // Sync tick
+  if (state.tickCount > tickCount) {
+    tickCount = state.tickCount;
+  }
+  if (state.nextShiftAt) nextShiftAt = state.nextShiftAt;
+  if (state.sessionBoundaries) sessionBoundaries = state.sessionBoundaries;
+
+  // Apply prices
+  ITEMS.forEach(function(item) {
+    var d = state.items && state.items[item.id];
+    if (!d) return;
+    lastPrices[item.id] = item.price;
+    item.price      = d.price;
+    item.trend      = d.trend;
+    item.volatility = d.volatility;
+    if (d.history && d.history.length) item.history = d.history;
+    if (d.candles && d.candles.length) {
+      item.candles = d.candles;
+      item.candleTickBuf = [];
+    }
+  });
 
   // Update UI
   var dot = document.getElementById('tick-dot');
@@ -2318,47 +2367,8 @@ async function hostTick() {
   renderAll();
 }
 
-async function clientSync() {
-  try {
-    var data = await fbGet(MARKET_KEY + '/prices');
-    if (!data || !data.items) return;
-    // Check data is fresh (< 6s old)
-    if (Date.now() - data.updatedAt > 6000) return;
-
-    // Sync tick count from host
-    if (data.tickCount > tickCount) {
-      tickCount = data.tickCount;
-      nextShiftAt = data.nextShiftAt || nextShiftAt;
-      if (data.sessionBoundaries) sessionBoundaries = data.sessionBoundaries;
-    }
-
-    // Sync prices from host
-    ITEMS.forEach(function(item) {
-      var d = data.items[item.id];
-      if (!d) return;
-      lastPrices[item.id] = item.price;
-      item.price      = d.price;
-      item.trend      = d.trend;
-      item.volatility = d.volatility;
-      if (d.history && d.history.length) item.history = d.history;
-      if (d.candles && d.candles.length) item.candles = d.candles;
-    });
-
-    // Update UI
-    var dot = document.getElementById('tick-dot');
-    if (dot) { dot.style.background = '#f0c040'; setTimeout(function(){ dot.style.background = 'var(--green)'; }, 300); }
-    var lbl = document.getElementById('tick-label');
-    if (lbl) lbl.textContent = 'Tick #' + tickCount;
-    checkSLTP();
-    renderAll();
-  } catch(e) { /* sync failure — keep last known state */ }
-}
-
-// ── TICK (legacy — only used as fallback) ──────────────────────────────────────────────────────────
-function tick() {
-  // This is now handled by hostTick / clientSync
-  // Kept as no-op to avoid breaking any remaining references
-}
+// ── TICK (legacy no-op) ───────────────────────────────────────────────────────
+function tick(){}
 
 // ── PAGE ──────────────────────────────────────────────────────────────────────
 /* showPage defined in new JS */
@@ -2446,28 +2456,28 @@ var saveTimer = null, myUsername = null, myWalletAddress = null;
 // ── Tournament open time ─────────────────────────────────────────────────────
 function ctOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?5:6;}
 
-// Tournament open: 5:21 PM CT on 3/25/2026 on 3/26/2025
+// Tournament open: 5:36 PM CT on 3/25/2026 on 3/26/2025
 function getTournamentOpen(){
-  return new Date(Date.UTC(2026,2,25,17+ctOff(),21,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),36,0));
 }
 function isTournamentOpen(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),21,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),36,0));
 }
 
-// Warning banner: 5:22 PM CT on 3/25/2026
+// Warning banner: 5:37 PM CT on 3/25/2026
 function getTournamentWarn(){
-  return new Date(Date.UTC(2026,2,25,17+ctOff(),22,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),37,0));
 }
 function isTournamentWarnTime(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),22,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),37,0));
 }
 
-// Tournament close: 5:23 PM CT on 3/25/2026
+// Tournament close: 5:38 PM CT on 3/25/2026
 function getTournamentClose(){
-  return new Date(Date.UTC(2026,2,25,17+ctOff(),23,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),38,0));
 }
 function isTournamentClosed(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),23,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),38,0));
 }
 
 function pad2(n){return n<10?'0'+n:''+n;}
@@ -2503,7 +2513,7 @@ function showTournamentWarning(secsLeft){
     bar.style.borderBottomColor = '#f0c040';
   }
   if(label){ label.style.background='#8a6a00'; label.textContent='\u26a0\ufe0f Warning'; }
-  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 5:23 PM CT \u2014 1 minute remaining!';
+  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 5:38 PM CT \u2014 1 minute remaining!';
   document.getElementById('bn-sub').textContent      = 'All open positions will be settled automatically. Check the \ud83c\udfc6 Leaderboard tab for standings.';
   document.getElementById('bn-countdown').textContent = secsLeft + 's';
   document.getElementById('breaking-news').classList.add('show');
@@ -2734,7 +2744,7 @@ function enterGame(){
   loadState().then(function(restored){
     renderAll(); saveState();
     // Elect host — first user drives prices, others sync from Firebase
-    electHost();
+    startMarketEngine();
     setInterval(saveState, 10000);
     setInterval(syncShared, 4000);
     setInterval(checkTournamentEvents, 5000);
