@@ -381,7 +381,13 @@
   .countdown-labels span{min-width:56px;text-align:center}
   .wallet-addr-header{font-size:.56rem;color:rgba(201,169,110,.35);margin-top:1px;font-family:monospace;letter-spacing:.5px}
 
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;
+  /* AUTH MODALS (popups over countdown) */
+  .auth-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px}
+  .auth-modal-box{background:linear-gradient(180deg,#3d2510,#2d1a0a);border:2px solid var(--gold-dark);border-radius:14px;padding:24px 22px 20px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.9);position:relative;max-height:90vh;overflow-y:auto}
+  .auth-modal-close{position:absolute;top:10px;right:12px;background:transparent;border:none;color:var(--text-dim);font-size:1.1rem;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px;transition:color .15s}
+  .auth-modal-close:hover{color:var(--gold)}
+
+
     display:flex;align-items:flex-start;justify-content:center;
     padding:0 12px;overflow-y:auto;
     opacity:0;pointer-events:none;transition:opacity .2s}
@@ -454,12 +460,12 @@
 </head>
 <body>
 
-<!-- COUNTDOWN SCREEN -->
+<!-- COUNTDOWN SCREEN (always visible until open) -->
 <div class="auth-screen" id="countdown-screen" style="display:none">
   <div class="auth-box">
     <div style="font-size:2.5rem;margin-bottom:8px">⚔️</div>
     <div class="auth-title">Trade Together</div>
-    <div class="auth-sub">Tournament opens at <strong style="color:var(--gold)">3:17 PM ET</strong></div>
+    <div class="auth-sub" id="cd-sub">Tournament opens at <strong style="color:var(--gold)">3:21 PM ET</strong></div>
     <div class="countdown-ring">
       <div class="countdown-num" id="cd-hours">00</div>
       <div class="countdown-sep">:</div>
@@ -472,53 +478,53 @@
     </div>
     <div id="cd-date-label" style="font-size:.72rem;color:var(--text-dim);margin-top:8px;letter-spacing:1px"></div>
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(107,74,34,.3)">
-      <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:12px;letter-spacing:.3px">Register now to be ready when the tournament opens.</div>
-      <button class="auth-btn" onclick="showAuthScreen('register-screen')" style="margin-bottom:8px">Create Account →</button>
-      <button class="auth-btn" onclick="showAuthScreen('login-screen')" style="background:transparent;border-color:var(--border);color:var(--text-dim);font-size:.8rem;padding:9px">Already have an account? Sign In</button>
+      <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:12px">Register now to be ready when the tournament opens.</div>
+      <button class="auth-btn" onclick="openAuthModal('register-modal')" style="margin-bottom:8px">Create Account →</button>
+      <button class="auth-btn" onclick="openAuthModal('login-modal')" style="background:transparent;border-color:var(--border);color:var(--text-dim);font-size:.8rem;padding:9px">Already have an account? Sign In</button>
     </div>
   </div>
 </div>
 
-<!-- LOGIN SCREEN -->
-<div class="auth-screen" id="login-screen" style="display:none">
-  <div class="auth-box">
-    <div style="font-size:2rem;margin-bottom:8px">⚔️</div>
-    <div class="auth-title">Sign In</div>
-    <div class="auth-sub">Enter your trader credentials to access the exchange.</div>
+<!-- LOGIN MODAL -->
+<div class="auth-modal-overlay" id="login-modal" style="display:none" onclick="closeAuthModalOnBg(event,'login-modal')">
+  <div class="auth-modal-box">
+    <button class="auth-modal-close" onclick="closeAuthModal('login-modal')">✕</button>
+    <div style="font-size:1.8rem;margin-bottom:6px">⚔️</div>
+    <div class="auth-title" style="font-size:1rem;margin-bottom:4px">Sign In</div>
+    <div class="auth-sub" style="font-size:.78rem;margin-bottom:10px">Enter your credentials to access the exchange.</div>
     <div class="auth-field-label">Username</div>
     <input class="auth-input" id="login-username" type="text" maxlength="20" placeholder="Your trader name" autocomplete="off">
     <div class="auth-field-label">Password</div>
     <input class="auth-input" id="login-password" type="password" maxlength="64" placeholder="Your password">
     <div id="login-error" class="auth-error"></div>
     <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
-    <div style="margin-top:12px;text-align:center">
-      <span style="font-size:.78rem;color:var(--text-dim)">No account? </span>
-      <span class="auth-link" onclick="showAuthScreen('register-screen')">Create one →</span>
+    <div style="margin-top:10px;text-align:center">
+      <span style="font-size:.76rem;color:var(--text-dim)">No account? </span>
+      <span class="auth-link" onclick="closeAuthModal('login-modal');openAuthModal('register-modal')">Create one →</span>
     </div>
-    <div style="margin-top:8px;text-align:center">
-      <span class="auth-link" onclick="showAuthScreen('countdown-screen')" style="font-size:.72rem;color:var(--text-dim);text-decoration:none;opacity:.6">← Back to countdown</span>
-    </div>
-<div class="auth-screen" id="register-screen" style="display:none">
-  <div class="auth-box">
-    <div style="font-size:2rem;margin-bottom:8px">⚔️</div>
-    <div class="auth-title">Create Account</div>
-    <div class="auth-sub">Register to join the tournament. Wallet address must be unique.</div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="auth-modal-overlay" id="register-modal" style="display:none" onclick="closeAuthModalOnBg(event,'register-modal')">
+  <div class="auth-modal-box">
+    <button class="auth-modal-close" onclick="closeAuthModal('register-modal')">✕</button>
+    <div style="font-size:1.8rem;margin-bottom:6px">⚔️</div>
+    <div class="auth-title" style="font-size:1rem;margin-bottom:4px">Create Account</div>
+    <div class="auth-sub" style="font-size:.78rem;margin-bottom:10px">Register for the tournament. Wallet must be unique.</div>
     <div class="auth-field-label">Username</div>
     <input class="auth-input" id="reg-username" type="text" maxlength="20" placeholder="e.g. DragonSlayer99" autocomplete="off">
     <div class="auth-field-label">Password</div>
-    <input class="auth-input" id="reg-password" type="password" maxlength="64" placeholder="Choose a password (min 6 chars)">
+    <input class="auth-input" id="reg-password" type="password" maxlength="64" placeholder="Min 6 characters">
     <div class="auth-field-label">Confirm Password</div>
     <input class="auth-input" id="reg-password2" type="password" maxlength="64" placeholder="Repeat password">
     <div class="auth-field-label">Wallet Address <span style="color:#ff9999;font-size:.65rem">*required · unique</span></div>
     <input class="auth-input" id="reg-wallet" type="text" maxlength="100" placeholder="0x… or your wallet address" style="font-size:.82rem;letter-spacing:.5px">
     <div id="reg-error" class="auth-error"></div>
     <button class="auth-btn" id="reg-btn" onclick="doRegister()">Create Account →</button>
-    <div style="margin-top:12px;text-align:center">
-      <span style="font-size:.78rem;color:var(--text-dim)">Have an account? </span>
-      <span class="auth-link" onclick="showAuthScreen('login-screen')">Sign in →</span>
-    </div>
-    <div style="margin-top:8px;text-align:center">
-      <span class="auth-link" onclick="showAuthScreen('countdown-screen')" style="font-size:.72rem;color:var(--text-dim);text-decoration:none;opacity:.6">← Back to countdown</span>
+    <div style="margin-top:10px;text-align:center">
+      <span style="font-size:.76rem;color:var(--text-dim)">Have an account? </span>
+      <span class="auth-link" onclick="closeAuthModal('register-modal');openAuthModal('login-modal')">Sign in →</span>
     </div>
   </div>
 </div>
@@ -2304,7 +2310,7 @@ function getTournamentOpen() {
   var stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
   var isDST = now.getTimezoneOffset() < stdOffset;
   var etOffset = isDST ? 4 : 5;
-  var openUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 15 + etOffset, 17, 0));
+  var openUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 15 + etOffset, 21, 0));
   if (now >= openUTC) openUTC = new Date(openUTC.getTime() + 86400000);
   return openUTC;
 }
@@ -2316,7 +2322,7 @@ function isTournamentOpen() {
   var stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
   var isDST = now.getTimezoneOffset() < stdOffset;
   var etOffset = isDST ? 4 : 5;
-  var openUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 15 + etOffset, 17, 0));
+  var openUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 15 + etOffset, 21, 0));
   return now >= openUTC;
 }
 
@@ -2328,7 +2334,7 @@ function startCountdown() {
       clearInterval(cdInterval);
       hideAllAuthScreens();
       if (myUsername) enterGame();
-      else showAuthScreen('login-screen');
+      else openAuthModal('login-modal');
       return;
     }
     var open = getTournamentOpen();
@@ -2351,16 +2357,31 @@ function startCountdown() {
 }
 
 function showAuthScreen(id) {
-  hideAllAuthScreens();
+  ['countdown-screen'].forEach(function(sid) {
+    var el = document.getElementById(sid);
+    if (el) el.style.display = sid === id ? 'flex' : 'none';
+  });
+}
+
+function hideAllAuthScreens() {
+  var el = document.getElementById('countdown-screen');
+  if (el) el.style.display = 'none';
+  closeAuthModal('login-modal');
+  closeAuthModal('register-modal');
+}
+
+function openAuthModal(id) {
   var el = document.getElementById(id);
   if (el) el.style.display = 'flex';
 }
 
-function hideAllAuthScreens() {
-  ['countdown-screen','login-screen','register-screen'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
+function closeAuthModal(id) {
+  var el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+function closeAuthModalOnBg(e, id) {
+  if (e.target === e.currentTarget) closeAuthModal(id);
 }
 
 async function hashPassword(pw) {
@@ -2420,11 +2441,11 @@ async function doRegister() {
     await window.storage.set('walletAddress', myWalletAddress);
     var addrEl = document.getElementById('wallet-addr-display');
     if (addrEl) addrEl.textContent = fmtWallet(myWalletAddress);
+    closeAuthModal('register-modal');
+    var sub = document.getElementById('cd-sub');
+    if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Account created! Welcome, ' + username + '.</span><br>Tournament opens at <strong style="color:var(--gold)">3:21 PM ET</strong>';
     if (!isTournamentOpen()) {
-      var sub = document.querySelector('#countdown-screen .auth-sub');
-      if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Account created! Welcome, ' + username + '.</span><br>Tournament opens at <strong style="color:var(--gold)">3:17 PM ET</strong>';
       showAuthScreen('countdown-screen');
-      startCountdown();
       return;
     }
     enterGame();
@@ -2456,11 +2477,11 @@ async function doLogin() {
     await window.storage.set('walletAddress', myWalletAddress);
     var addrEl = document.getElementById('wallet-addr-display');
     if (addrEl) addrEl.textContent = fmtWallet(myWalletAddress);
+    closeAuthModal('login-modal');
+    var sub = document.getElementById('cd-sub');
+    if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Signed in as ' + myUsername + '.</span><br>Tournament opens at <strong style="color:var(--gold)">3:21 PM ET</strong>';
     if (!isTournamentOpen()) {
-      var sub = document.querySelector('#countdown-screen .auth-sub');
-      if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Signed in as ' + myUsername + '.</span><br>Tournament opens at <strong style="color:var(--gold)">3:17 PM ET</strong>';
       showAuthScreen('countdown-screen');
-      startCountdown();
       return;
     }
     enterGame();
@@ -2674,17 +2695,17 @@ window.addEventListener('load', async function() {
       if (addrEl && myWalletAddress) addrEl.textContent = fmtWallet(myWalletAddress);
       if (isTournamentOpen()) { enterGame(); }
       else {
-        var sub = document.querySelector('#countdown-screen .auth-sub');
-        if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Welcome back, ' + myUsername + '!</span><br>Tournament opens at <strong style="color:var(--gold)">3:17 PM ET</strong>';
+        var sub = document.getElementById('cd-sub');
+        if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Welcome back, ' + myUsername + '!</span><br>Tournament opens at <strong style="color:var(--gold)">3:21 PM ET</strong>';
         showAuthScreen('countdown-screen');
         startCountdown();
       }
     } else {
-      if (isTournamentOpen()) showAuthScreen('login-screen');
+      if (isTournamentOpen()) openAuthModal('login-modal');
       else { showAuthScreen('countdown-screen'); startCountdown(); }
     }
   } catch(e) {
-    if (isTournamentOpen()) showAuthScreen('login-screen');
+    if (isTournamentOpen()) openAuthModal('login-modal');
     else { showAuthScreen('countdown-screen'); startCountdown(); }
   }
 });
