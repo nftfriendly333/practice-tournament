@@ -1,3 +1,5 @@
+[practicetournament.html](https://github.com/user-attachments/files/26256060/practicetournament.html)
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -2458,26 +2460,26 @@ function ctOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.g
 
 // Tournament open: 5:36 PM CT on 3/25/2026 on 3/26/2025
 function getTournamentOpen(){
-  return new Date(Date.UTC(2026,2,25,17+ctOff(),36,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),45,0));
 }
 function isTournamentOpen(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),36,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),45,0));
 }
 
 // Warning banner: 5:37 PM CT on 3/25/2026
 function getTournamentWarn(){
-  return new Date(Date.UTC(2026,2,25,17+ctOff(),37,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),46,0));
 }
 function isTournamentWarnTime(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),37,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),46,0));
 }
 
 // Tournament close: 5:38 PM CT on 3/25/2026
 function getTournamentClose(){
-  return new Date(Date.UTC(2026,2,25,17+ctOff(),38,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),47,0));
 }
 function isTournamentClosed(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),38,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),47,0));
 }
 
 function pad2(n){return n<10?'0'+n:''+n;}
