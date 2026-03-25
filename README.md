@@ -1,4 +1,4 @@
-[practicetournament.html](https://github.com/user-attachments/files/26255249/practicetournament.html)
+[practicetournament.html](https://github.com/user-attachments/files/26255313/practicetournament.html)
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2330,30 +2330,30 @@ var SAVE_KEY = 'tradeTogether_v1';
 var saveTimer = null, myUsername = null, myWalletAddress = null;
 
 // ── Tournament open time ─────────────────────────────────────────────────────
-function ctOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?5:6;}
+function etOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?4:5;}
 
-// Tournament open: 4:06 PM CT on 3/26/2025
+// Tournament open: 5:42 PM ET on 3/25/2026 on 3/26/2025
 function getTournamentOpen(){
-  return new Date(Date.UTC(2025,2,26,15+ctOff(),6,0));
+  return new Date(Date.UTC(2026,2,25,17+etOff(),42,0));
 }
 function isTournamentOpen(){
-  return new Date()>=new Date(Date.UTC(2025,2,26,15+ctOff(),6,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+etOff(),42,0));
 }
 
-// Warning banner: 4:09 PM CT on 3/26/2025
+// Warning banner: 5:44 PM ET on 3/25/2026
 function getTournamentWarn(){
-  return new Date(Date.UTC(2025,2,26,15+ctOff(),9,0));
+  return new Date(Date.UTC(2026,2,25,17+etOff(),44,0));
 }
 function isTournamentWarnTime(){
-  return new Date()>=new Date(Date.UTC(2025,2,26,15+ctOff(),9,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+etOff(),44,0));
 }
 
-// Tournament close: 4:10 PM CT on 3/26/2025
+// Tournament close: 5:45 PM ET on 3/25/2026
 function getTournamentClose(){
-  return new Date(Date.UTC(2025,2,26,15+ctOff(),10,0));
+  return new Date(Date.UTC(2026,2,25,17+etOff(),45,0));
 }
 function isTournamentClosed(){
-  return new Date()>=new Date(Date.UTC(2025,2,26,15+ctOff(),10,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+etOff(),45,0));
 }
 
 function pad2(n){return n<10?'0'+n:''+n;}
@@ -2389,7 +2389,7 @@ function showTournamentWarning(secsLeft){
     bar.style.borderBottomColor = '#f0c040';
   }
   if(label){ label.style.background='#8a6a00'; label.textContent='\u26a0\ufe0f Warning'; }
-  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 4:10 PM CT \u2014 1 minute remaining!';
+  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 5:45 PM ET \u2014 1 minute remaining!';
   document.getElementById('bn-sub').textContent      = 'All open positions will be settled automatically. Check the \ud83c\udfc6 Leaderboard tab for standings.';
   document.getElementById('bn-countdown').textContent = secsLeft + 's';
   document.getElementById('breaking-news').classList.add('show');
