@@ -2277,8 +2277,8 @@ function resetFundsAndHistory() {
 var SAVE_KEY='tradeTogether_v1',ACCOUNTS_KEY='tt_accounts',WALLET_IDX_KEY='tt_wallets';
 var saveTimer=null,myUsername=null,myWalletAddress=null;
 function etOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?4:5;}
-function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+etOff(),50,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
-function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+etOff(),50,0));}
+function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+etOff(),55,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
+function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+etOff(),55,0));}
 function pad2(n){return n<10?'0'+n:''+n;}
 var cdInt=null;
 function startGateCountdown(){
@@ -2314,7 +2314,7 @@ document.addEventListener('DOMContentLoaded',function(){
   ['reg-user','reg-pass','reg-pass2','reg-wallet'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')doRegister();});});
 });
 async function hashPw(pw){try{var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}catch(e){var h=0;for(var i=0;i<pw.length;i++)h=(Math.imul(31,h)+pw.charCodeAt(i))|0;return 'fb_'+Math.abs(h).toString(16);}}
-function valWallet(a){return a&&a.length>=8&&/^(0x[0-9a-fA-F]{10,}|bc1[a-zA-HJ-NP-Z0-9]{6,}|[13][a-zA-HJ-NP-Z1-9]{25,}|[a-zA-Z0-9]{26,})$/.test(a);}
+function valWallet(a){return !!(a&&a.trim().length>=8);}
 function fmtWallet(a){if(!a)return '';if(a.length<=12)return a;return a.slice(0,6)+'…'+a.slice(-4);}
 async function getAccounts(){try{var r=await window.storage.get(ACCOUNTS_KEY,true);return r?JSON.parse(r.value):{};}catch(e){return {};}}
 async function getWalletIdx(){try{var r=await window.storage.get(WALLET_IDX_KEY,true);return r?JSON.parse(r.value):{};}catch(e){return {};}}
