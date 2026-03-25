@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -2193,53 +2194,69 @@ function renderHistory() {
 }
 
 // ── SHARED MARKET STATE ──────────────────────────────────────────────────────
-// One user is the "host" — they run the price engine and broadcast to Firebase.
-// Everyone else reads from Firebase every tick instead of computing locally.
 var isHost = false;
 var hostCheckInterval = null;
 var marketSyncInterval = null;
+var hostTickInterval = null;
+var hostElectionRunning = false;
 var MARKET_KEY = 'market_state';
 
 async function electHost() {
-  // Try to claim host role — first writer wins
+  // Prevent concurrent elections
+  if (hostElectionRunning) return;
+  hostElectionRunning = true;
   try {
     var existing = await fbGet(MARKET_KEY + '/host');
     var now = Date.now();
-    // If no host, or host is stale (>8s old), claim it
     if (!existing || !existing.claimedAt || (now - existing.claimedAt) > 8000) {
       await fbSet(MARKET_KEY + '/host', { username: myUsername, claimedAt: now });
-      // Verify we actually got it (race condition protection)
       var check = await fbGet(MARKET_KEY + '/host');
       if (check && check.username === myUsername) {
-        isHost = true;
-        console.log('Host role claimed by', myUsername);
-        startHostEngine();
+        if (!isHost) {
+          isHost = true;
+          console.log('Host role claimed by', myUsername);
+          startHostEngine();
+        }
+        hostElectionRunning = false;
         return;
       }
     }
-    isHost = false;
-    startClientSync();
+    // Not host — ensure client sync is running
+    if (isHost) {
+      // Lost host role — stop host tick, start client sync
+      isHost = false;
+      if (hostTickInterval) { clearInterval(hostTickInterval); hostTickInterval = null; }
+      startClientSync();
+    }
   } catch(e) {
-    // If Firebase fails, run locally
-    isHost = true;
-    startHostEngine();
+    if (!isHost) {
+      isHost = true;
+      startHostEngine();
+    }
   }
+  hostElectionRunning = false;
 }
 
 function startHostEngine() {
-  // Host renews claim every 5s and runs the price engine
+  // Clear any existing tick interval before creating a new one
+  if (hostTickInterval) clearInterval(hostTickInterval);
+  if (marketSyncInterval) { clearInterval(marketSyncInterval); marketSyncInterval = null; }
+  hostTickInterval = setInterval(hostTick, TICK_MS);
+  // Renew host claim every 5s
+  if (hostCheckInterval) clearInterval(hostCheckInterval);
   hostCheckInterval = setInterval(function() {
     fbSet(MARKET_KEY + '/host', { username: myUsername, claimedAt: Date.now() });
   }, 5000);
-  // Host ticks at TICK_MS
-  setInterval(hostTick, TICK_MS);
 }
 
 function startClientSync() {
-  // Clients poll Firebase for market state every TICK_MS
+  // Clear any existing intervals before starting new ones
+  if (hostTickInterval) { clearInterval(hostTickInterval); hostTickInterval = null; }
+  if (marketSyncInterval) clearInterval(marketSyncInterval);
   marketSyncInterval = setInterval(clientSync, TICK_MS);
-  clientSync(); // immediate first sync
-  // Clients still check if they should become host
+  clientSync();
+  // Check periodically if we should become host
+  if (hostCheckInterval) clearInterval(hostCheckInterval);
   hostCheckInterval = setInterval(electHost, 6000);
 }
 
@@ -2427,30 +2444,30 @@ var SAVE_KEY = 'tradeTogether_v1';
 var saveTimer = null, myUsername = null, myWalletAddress = null;
 
 // ── Tournament open time ─────────────────────────────────────────────────────
-function etOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?4:5;}
+function ctOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?5:6;}
 
-// Tournament open: 6:12 PM ET on 3/25/2026 on 3/26/2025
+// Tournament open: 5:21 PM CT on 3/25/2026 on 3/26/2025
 function getTournamentOpen(){
-  return new Date(Date.UTC(2026,2,25,18+etOff(),12,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),21,0));
 }
 function isTournamentOpen(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),12,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),21,0));
 }
 
-// Warning banner: 6:13 PM ET on 3/25/2026
+// Warning banner: 5:22 PM CT on 3/25/2026
 function getTournamentWarn(){
-  return new Date(Date.UTC(2026,2,25,18+etOff(),13,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),22,0));
 }
 function isTournamentWarnTime(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),13,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),22,0));
 }
 
-// Tournament close: 6:14 PM ET on 3/25/2026
+// Tournament close: 5:23 PM CT on 3/25/2026
 function getTournamentClose(){
-  return new Date(Date.UTC(2026,2,25,18+etOff(),14,0));
+  return new Date(Date.UTC(2026,2,25,17+ctOff(),23,0));
 }
 function isTournamentClosed(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),14,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,17+ctOff(),23,0));
 }
 
 function pad2(n){return n<10?'0'+n:''+n;}
@@ -2486,7 +2503,7 @@ function showTournamentWarning(secsLeft){
     bar.style.borderBottomColor = '#f0c040';
   }
   if(label){ label.style.background='#8a6a00'; label.textContent='\u26a0\ufe0f Warning'; }
-  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 6:14 PM ET \u2014 1 minute remaining!';
+  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 5:23 PM CT \u2014 1 minute remaining!';
   document.getElementById('bn-sub').textContent      = 'All open positions will be settled automatically. Check the \ud83c\udfc6 Leaderboard tab for standings.';
   document.getElementById('bn-countdown').textContent = secsLeft + 's';
   document.getElementById('breaking-news').classList.add('show');
