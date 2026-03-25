@@ -2275,7 +2275,7 @@ function resetFundsAndHistory() {
 
 // ═══ FIREBASE CONFIG ════════════════════════════════════════════════════════
 // Free Firebase project — replace with your own if desired
-const FB_URL = 'https://practicetournament-3887d-default-rtdb.firebaseio.com/';
+const FB_URL = 'https://practicetournament-3887d-default-rtdb.firebaseio.com';
 
 async function fbGet(path) {
   try {
@@ -2310,8 +2310,8 @@ var saveTimer = null, myUsername = null, myWalletAddress = null;
 
 // ── Tournament open time ─────────────────────────────────────────────────────
 function ctOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?5:6;}
-function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),26,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
-function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),26,0));}
+function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),46,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
+function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),46,0));}
 function pad2(n){return n<10?'0'+n:''+n;}
 
 var cdInt = null;
