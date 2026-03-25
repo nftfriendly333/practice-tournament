@@ -2277,8 +2277,8 @@ function resetFundsAndHistory() {
 var SAVE_KEY='tradeTogether_v1',ACCOUNTS_KEY='tt_accounts',WALLET_IDX_KEY='tt_wallets';
 var saveTimer=null,myUsername=null,myWalletAddress=null;
 function etOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?4:5;}
-function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+etOff(),55,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
-function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+etOff(),55,0));}
+function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),16+etOff(),5,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
+function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),16+etOff(),5,0));}
 function pad2(n){return n<10?'0'+n:''+n;}
 var cdInt=null;
 function startGateCountdown(){
@@ -2327,24 +2327,34 @@ async function doRegister(){
   if(!/^[a-zA-Z0-9_]+$/.test(user)){err.textContent='Letters, numbers and underscores only.';return;}
   if(!pw||pw.length<6){err.textContent='Password must be at least 6 characters.';return;}
   if(pw!==pw2){err.textContent='Passwords do not match.';return;}
-  if(!wal){err.textContent='Wallet address is required.';return;}
-  if(!valWallet(wal)){err.textContent='Enter a valid wallet address (ETH 0x…, BTC, etc).';return;}
+  if(!wal||wal.length<8){err.textContent='Wallet address is required (min 8 characters).';return;}
   btn.disabled=true;btn.textContent='Checking…';
+  // Test storage availability first
+  if(typeof window.storage==='undefined'){
+    document.getElementById('reg-err').textContent='Storage unavailable in this environment.';
+    btn.disabled=false;btn.textContent='Create Account →';return;
+  }
   try{
+    // Sanitize wallet for use as storage key — strip all non-alphanumeric chars
+    var walKey='w_'+wal.toLowerCase().replace(/[^a-z0-9]/g,'');
     var ac=await getAccounts(),wi=await getWalletIdx();
     if(ac[user.toLowerCase()]){err.textContent='Username already taken.';btn.disabled=false;btn.textContent='Create Account →';return;}
-    if(wi[wal.toLowerCase()]){err.textContent='Wallet already linked to another account.';btn.disabled=false;btn.textContent='Create Account →';return;}
+    if(wi[walKey]){err.textContent='Wallet already linked to another account.';btn.disabled=false;btn.textContent='Create Account →';return;}
     var hash=await hashPw(pw);
     ac[user.toLowerCase()]={username:user,passwordHash:hash,wallet:wal,createdAt:Date.now()};
-    wi[wal.toLowerCase()]=user.toLowerCase();
+    wi[walKey]=user.toLowerCase();
     await window.storage.set(ACCOUNTS_KEY,JSON.stringify(ac),true);
     await window.storage.set(WALLET_IDX_KEY,JSON.stringify(wi),true);
     myUsername=user;myWalletAddress=wal;
-    await window.storage.set('username',myUsername);await window.storage.set('walletAddress',myWalletAddress);
+    await window.storage.set('tt_user_'+user.toLowerCase(),myUsername);
+    await window.storage.set('tt_addr_'+user.toLowerCase(),myWalletAddress);
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
     document.getElementById('cd-msg').textContent='✓ Account created! Welcome, '+user+'.';
-  }catch(e){err.textContent='Registration failed. Try again.';console.error(e);}
+  }catch(e){
+    err.textContent='Registration failed: '+(e&&e.message?e.message:'unknown error');
+    console.error('Registration error:',e);
+  }
   btn.disabled=false;btn.textContent='Create Account →';
 }
 async function doLogin(){
@@ -2359,7 +2369,8 @@ async function doLogin(){
     if(!rec){err.textContent='Username not found.';btn.disabled=false;btn.textContent='Sign In →';return;}
     if(await hashPw(pw)!==rec.passwordHash){err.textContent='Incorrect password.';btn.disabled=false;btn.textContent='Sign In →';return;}
     myUsername=rec.username;myWalletAddress=rec.wallet;
-    await window.storage.set('username',myUsername);await window.storage.set('walletAddress',myWalletAddress);
+    await window.storage.set('tt_user_'+myUsername.toLowerCase(),myUsername);
+    await window.storage.set('tt_addr_'+myUsername.toLowerCase(),myWalletAddress);
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
     document.getElementById('cd-msg').textContent='✓ Signed in as '+myUsername+'. Waiting for open…';
@@ -2483,8 +2494,12 @@ function showPage(name){
 window.addEventListener('load',async function(){
   try{
     var su=await window.storage.get('username'),sw=await window.storage.get('walletAddress');
+    // Also try new key format
+    if(!su||!su.value){try{var keys=await window.storage.list('tt_user_');if(keys&&keys.keys&&keys.keys.length){su={value:(await window.storage.get(keys.keys[0])).value};}}catch(ke){}}
     if(su&&su.value){
-      myUsername=su.value;if(sw&&sw.value)myWalletAddress=sw.value;
+      myUsername=su.value;
+      if(!sw||!sw.value){try{var aw=await window.storage.get('tt_addr_'+myUsername.toLowerCase());if(aw)sw=aw;}catch(ke){}}
+      if(sw&&sw.value)myWalletAddress=sw.value;
       if(isTournamentOpen()){enterGame();return;}
       document.getElementById('cd-msg').textContent='✓ Welcome back, '+myUsername+'. Waiting for open…';
     }
