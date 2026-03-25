@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -2328,36 +2327,28 @@ var saveTimer = null, myUsername = null, myWalletAddress = null;
 // ── Tournament open time ─────────────────────────────────────────────────────
 function ctOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?5:6;}
 
-// Tournament open: 4:15 PM CT
+// Tournament open: 4:06 PM CT on 3/26/2025
 function getTournamentOpen(){
-  var n=new Date();
-  var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),15,0));
-  if(n>=o)o=new Date(o.getTime()+86400000);
-  return o;
+  return new Date(Date.UTC(2025,2,26,15+ctOff(),6,0));
 }
 function isTournamentOpen(){
-  var n=new Date();
-  return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),15,0));
+  return new Date()>=new Date(Date.UTC(2025,2,26,15+ctOff(),6,0));
 }
 
-// Warning banner: 4:19 PM CT
+// Warning banner: 4:09 PM CT on 3/26/2025
 function getTournamentWarn(){
-  var n=new Date();
-  return new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),19,0));
+  return new Date(Date.UTC(2025,2,26,15+ctOff(),9,0));
 }
 function isTournamentWarnTime(){
-  var n=new Date();
-  return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),19,0));
+  return new Date()>=new Date(Date.UTC(2025,2,26,15+ctOff(),9,0));
 }
 
-// Tournament close: 4:20 PM CT
+// Tournament close: 4:10 PM CT on 3/26/2025
 function getTournamentClose(){
-  var n=new Date();
-  return new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),20,0));
+  return new Date(Date.UTC(2025,2,26,15+ctOff(),10,0));
 }
 function isTournamentClosed(){
-  var n=new Date();
-  return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),20,0));
+  return new Date()>=new Date(Date.UTC(2025,2,26,15+ctOff(),10,0));
 }
 
 function pad2(n){return n<10?'0'+n:''+n;}
@@ -2369,7 +2360,7 @@ function checkTournamentEvents(){
   if(!myUsername)return;
   var now = new Date();
 
-  // 4:19 PM CT — show warning banner
+  // 4:09 PM CT — show warning banner
   if(!tournamentWarnFired && isTournamentWarnTime() && !isTournamentClosed()){
     tournamentWarnFired = true;
     var diff = Math.max(0, getTournamentClose() - now);
@@ -2377,7 +2368,7 @@ function checkTournamentEvents(){
     showTournamentWarning(secsLeft);
   }
 
-  // 4:20 PM CT — force close all trades
+  // 4:10 PM CT — force close all trades
   if(!tournamentCloseFired && isTournamentClosed()){
     tournamentCloseFired = true;
     forceTournamentClose();
@@ -2393,7 +2384,7 @@ function showTournamentWarning(secsLeft){
     bar.style.borderBottomColor = '#f0c040';
   }
   if(label){ label.style.background='#8a6a00'; label.textContent='\u26a0\ufe0f Warning'; }
-  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 4:20 PM CT \u2014 1 minute remaining!';
+  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 4:10 PM CT \u2014 1 minute remaining!';
   document.getElementById('bn-sub').textContent      = 'All open positions will be settled automatically. Check the \ud83c\udfc6 Leaderboard tab for standings.';
   document.getElementById('bn-countdown').textContent = secsLeft + 's';
   document.getElementById('breaking-news').classList.add('show');
