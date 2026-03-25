@@ -880,42 +880,8 @@ ITEMS.forEach(function(item) {
 
 // ── PRICE ENGINE ─────────────────────────────────────────────────────────────
 function updatePrices() {
-  // Apply surge/crash overrides first
-  applyEventPrices();
-
-  ITEMS.forEach(function(item) {
-    lastPrices[item.id] = item.price;
-    var chg = item.price * ((Math.random() - 0.48) * item.volatility + item.trend);
-    item.price = Math.max(5, Math.round((item.price + chg) * 100) / 100);
-    item.history.push(item.price);
-    if (item.history.length > MAX_HISTORY) item.history.shift();
-
-    // Feed current candle buffer
-    item.candleTickBuf.push(item.price);
-
-    // Update or finalise candle
-    if (item.candles.length === 0 || item.candleTickBuf.length === 1) {
-      // Start new candle
-      var prev = item.candles.length ? item.candles[item.candles.length - 1].c : item.price;
-      item.candles.push({ o: prev, h: item.price, l: item.price, c: item.price });
-    } else {
-      // Update current candle high/low/close
-      var cur = item.candles[item.candles.length - 1];
-      cur.h = Math.max(cur.h, item.price);
-      cur.l = Math.min(cur.l, item.price);
-      cur.c = item.price;
-    }
-
-    // Finalise candle every CANDLE_TICKS
-    if (item.candleTickBuf.length >= CANDLE_TICKS) {
-      item.candleTickBuf = [];
-      // Keep max 60 candles
-      if (item.candles.length > 60) item.candles.shift();
-    }
-  });
-  checkSLTP();
-  checkPriceCeiling();
-  renderAll();
+  // Price updates are now handled by hostTick (host) or clientSync (clients)
+  // This function is kept as a no-op for compatibility
 }
 
 function calcPnl(pos, currentPrice) {
@@ -1044,12 +1010,10 @@ function randomTrend() {
 
 function shiftTrends() {
   sessionBoundaries.push(tickCount);
-  // Keep only last 60 boundaries (more than enough for chart history)
   if (sessionBoundaries.length > 60) sessionBoundaries.shift();
   ITEMS.forEach(function(item) { item.trend = randomTrend(); });
   nextShiftAt = tickCount + TREND_SHIFT_TICKS;
   dismissNews();
-  showToast('New trading session started! Trends have shifted.', 'tp-hit');
 }
 
 function showBreakingNews(ticksLeft) {
@@ -2228,35 +2192,159 @@ function renderHistory() {
   listEl.innerHTML = rows;
 }
 
+// ── SHARED MARKET STATE ──────────────────────────────────────────────────────
+// One user is the "host" — they run the price engine and broadcast to Firebase.
+// Everyone else reads from Firebase every tick instead of computing locally.
+var isHost = false;
+var hostCheckInterval = null;
+var marketSyncInterval = null;
+var MARKET_KEY = 'market_state';
+
+async function electHost() {
+  // Try to claim host role — first writer wins
+  try {
+    var existing = await fbGet(MARKET_KEY + '/host');
+    var now = Date.now();
+    // If no host, or host is stale (>8s old), claim it
+    if (!existing || !existing.claimedAt || (now - existing.claimedAt) > 8000) {
+      await fbSet(MARKET_KEY + '/host', { username: myUsername, claimedAt: now });
+      // Verify we actually got it (race condition protection)
+      var check = await fbGet(MARKET_KEY + '/host');
+      if (check && check.username === myUsername) {
+        isHost = true;
+        console.log('Host role claimed by', myUsername);
+        startHostEngine();
+        return;
+      }
+    }
+    isHost = false;
+    startClientSync();
+  } catch(e) {
+    // If Firebase fails, run locally
+    isHost = true;
+    startHostEngine();
+  }
+}
+
+function startHostEngine() {
+  // Host renews claim every 5s and runs the price engine
+  hostCheckInterval = setInterval(function() {
+    fbSet(MARKET_KEY + '/host', { username: myUsername, claimedAt: Date.now() });
+  }, 5000);
+  // Host ticks at TICK_MS
+  setInterval(hostTick, TICK_MS);
+}
+
+function startClientSync() {
+  // Clients poll Firebase for market state every TICK_MS
+  marketSyncInterval = setInterval(clientSync, TICK_MS);
+  clientSync(); // immediate first sync
+  // Clients still check if they should become host
+  hostCheckInterval = setInterval(electHost, 6000);
+}
+
+async function hostTick() {
+  tickCount++;
+  // Session trend shift
+  if (tickCount >= nextShiftAt) shiftTrends();
+  // Price events
+  maybeFireEvent();
+  // Compute new prices locally
+  applyEventPrices();
+  var priceData = {};
+  ITEMS.forEach(function(item) {
+    lastPrices[item.id] = item.price;
+    var chg = item.price * ((Math.random() - 0.48) * item.volatility + item.trend);
+    item.price = Math.max(5, Math.round((item.price + chg) * 100) / 100);
+    item.history.push(item.price);
+    if (item.history.length > MAX_HISTORY) item.history.shift();
+    item.candleTickBuf.push(item.price);
+    if (item.candles.length === 0 || item.candleTickBuf.length === 1) {
+      var prev = item.candles.length ? item.candles[item.candles.length - 1].c : item.price;
+      item.candles.push({ o: prev, h: item.price, l: item.price, c: item.price });
+    } else {
+      var cur = item.candles[item.candles.length - 1];
+      cur.h = Math.max(cur.h, item.price);
+      cur.l = Math.min(cur.l, item.price);
+      cur.c = item.price;
+    }
+    if (item.candleTickBuf.length >= CANDLE_TICKS) {
+      item.candleTickBuf = [];
+      if (item.candles.length > 60) item.candles.shift();
+    }
+    priceData[item.id] = {
+      price: item.price,
+      trend: item.trend,
+      volatility: item.volatility,
+      history: item.history.slice(-MAX_HISTORY),
+      candles: item.candles.slice(-60)
+    };
+  });
+  // Broadcast to Firebase
+  try {
+    await fbSet(MARKET_KEY + '/prices', {
+      tickCount: tickCount,
+      nextShiftAt: nextShiftAt,
+      sessionBoundaries: sessionBoundaries.slice(-60),
+      items: priceData,
+      updatedAt: Date.now()
+    });
+  } catch(e) { /* broadcast failure — still run locally */ }
+
+  // Update UI
+  var dot = document.getElementById('tick-dot');
+  if (dot) { dot.style.background = '#f0c040'; setTimeout(function(){ dot.style.background = 'var(--green)'; }, 300); }
+  var lbl = document.getElementById('tick-label');
+  if (lbl) lbl.textContent = 'Tick #' + tickCount;
+  checkSLTP();
+  checkPriceCeiling();
+  renderAll();
+}
+
+async function clientSync() {
+  try {
+    var data = await fbGet(MARKET_KEY + '/prices');
+    if (!data || !data.items) return;
+    // Check data is fresh (< 6s old)
+    if (Date.now() - data.updatedAt > 6000) return;
+
+    // Sync tick count from host
+    if (data.tickCount > tickCount) {
+      tickCount = data.tickCount;
+      nextShiftAt = data.nextShiftAt || nextShiftAt;
+      if (data.sessionBoundaries) sessionBoundaries = data.sessionBoundaries;
+    }
+
+    // Sync prices from host
+    ITEMS.forEach(function(item) {
+      var d = data.items[item.id];
+      if (!d) return;
+      lastPrices[item.id] = item.price;
+      item.price      = d.price;
+      item.trend      = d.trend;
+      item.volatility = d.volatility;
+      if (d.history && d.history.length) item.history = d.history;
+      if (d.candles && d.candles.length) item.candles = d.candles;
+    });
+
+    // Update UI
+    var dot = document.getElementById('tick-dot');
+    if (dot) { dot.style.background = '#f0c040'; setTimeout(function(){ dot.style.background = 'var(--green)'; }, 300); }
+    var lbl = document.getElementById('tick-label');
+    if (lbl) lbl.textContent = 'Tick #' + tickCount;
+    checkSLTP();
+    renderAll();
+  } catch(e) { /* sync failure — keep last known state */ }
+}
+
+// ── TICK (legacy — only used as fallback) ──────────────────────────────────────────────────────────
+function tick() {
+  // This is now handled by hostTick / clientSync
+  // Kept as no-op to avoid breaking any remaining references
+}
+
 // ── PAGE ──────────────────────────────────────────────────────────────────────
 /* showPage defined in new JS */
-
-// ── TICK ──────────────────────────────────────────────────────────────────────
-function tick() {
-  tickCount++;
-  var dot = document.getElementById('tick-dot');
-  dot.style.background = '#f0c040';
-  document.getElementById('tick-label').textContent = 'Tick #' + tickCount;
-  setTimeout(function(){ dot.style.background = 'var(--green)'; }, 300);
-
-  // Session trend shift — only show warning when no price event is active
-  var ticksToShift = nextShiftAt - tickCount;
-  if (!activeEvent) {
-    if (ticksToShift === WARNING_TICKS) {
-      showBreakingNews(ticksToShift);
-    } else if (ticksToShift < WARNING_TICKS && ticksToShift > 0) {
-      updateNewsCountdown(ticksToShift);
-    }
-  }
-  if (tickCount >= nextShiftAt) {
-    shiftTrends();
-  }
-
-  // Fire or advance price events (surge/crash — never both at once)
-  maybeFireEvent();
-
-  updatePrices();
-}
 
 function resetFundsAndHistory() {
   if (!confirm('Reset to 10,000 PvE and clear all trade history? Open positions will be closed. This cannot be undone.')) return;
@@ -2341,28 +2429,28 @@ var saveTimer = null, myUsername = null, myWalletAddress = null;
 // ── Tournament open time ─────────────────────────────────────────────────────
 function etOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?4:5;}
 
-// Tournament open: 5:56 PM ET on 3/25/2026 on 3/26/2025
+// Tournament open: 6:12 PM ET on 3/25/2026 on 3/26/2025
 function getTournamentOpen(){
-  return new Date(Date.UTC(2026,2,25,17+etOff(),56,0));
+  return new Date(Date.UTC(2026,2,25,18+etOff(),12,0));
 }
 function isTournamentOpen(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,17+etOff(),56,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),12,0));
 }
 
-// Warning banner: 5:59 PM ET on 3/25/2026
+// Warning banner: 6:13 PM ET on 3/25/2026
 function getTournamentWarn(){
-  return new Date(Date.UTC(2026,2,25,17+etOff(),59,0));
+  return new Date(Date.UTC(2026,2,25,18+etOff(),13,0));
 }
 function isTournamentWarnTime(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,17+etOff(),59,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),13,0));
 }
 
-// Tournament close: 6:00 PM ET on 3/25/2026
+// Tournament close: 6:14 PM ET on 3/25/2026
 function getTournamentClose(){
-  return new Date(Date.UTC(2026,2,25,18+etOff(),0,0));
+  return new Date(Date.UTC(2026,2,25,18+etOff(),14,0));
 }
 function isTournamentClosed(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),0,0));
+  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),14,0));
 }
 
 function pad2(n){return n<10?'0'+n:''+n;}
@@ -2398,7 +2486,7 @@ function showTournamentWarning(secsLeft){
     bar.style.borderBottomColor = '#f0c040';
   }
   if(label){ label.style.background='#8a6a00'; label.textContent='\u26a0\ufe0f Warning'; }
-  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 6:00 PM ET \u2014 1 minute remaining!';
+  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 6:14 PM ET \u2014 1 minute remaining!';
   document.getElementById('bn-sub').textContent      = 'All open positions will be settled automatically. Check the \ud83c\udfc6 Leaderboard tab for standings.';
   document.getElementById('bn-countdown').textContent = secsLeft + 's';
   document.getElementById('breaking-news').classList.add('show');
@@ -2628,11 +2716,11 @@ function enterGame(){
   document.getElementById('breaking-news').classList.remove('app-hidden');
   loadState().then(function(restored){
     renderAll(); saveState();
-    setInterval(tick, TICK_MS);
+    // Elect host — first user drives prices, others sync from Firebase
+    electHost();
     setInterval(saveState, 10000);
     setInterval(syncShared, 4000);
-    setInterval(checkTournamentEvents, 5000); // check every 5s for warning/close
-    // Run immediately in case we're already past a threshold
+    setInterval(checkTournamentEvents, 5000);
     checkTournamentEvents();
     window.addEventListener('resize', function(){ renderMarket(); });
     var a=document.getElementById('wallet-addr-display');
