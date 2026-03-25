@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -333,61 +334,7 @@
   .legend-desc{font-size:.72rem;color:var(--text-dim);line-height:1.4;display:block}
 
 
-  /* LIVE TRADES */
-  .live-trade-card{background:linear-gradient(135deg,var(--panel-light),var(--panel));border:1.5px solid var(--border);
-    border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;
-    animation:slideIn .25s ease}
-  .live-trade-card.long-card{border-left:3px solid var(--green)}
-  .live-trade-card.short-card{border-left:3px solid var(--red)}
-  .live-player-name{font-family:'Cinzel',serif;font-size:.76rem;color:var(--gold);font-weight:700;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
-  .live-trade-pnl{font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;flex-shrink:0;text-align:right}
-  .live-trade-pnl.pos{color:var(--green)}.live-trade-pnl.neg{color:var(--red)}
-  /* LEADERBOARD */
-  .lb-row{background:linear-gradient(135deg,var(--panel-light),var(--panel));border:1.5px solid var(--border);
-    border-radius:9px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;
-    animation:slideIn .25s ease}
-  .lb-row.lb-top1{border-color:#f0c040;box-shadow:0 0 12px rgba(240,192,64,.15)}
-  .lb-row.lb-top2{border-color:#c0c0c0}
-  .lb-row.lb-top3{border-color:#cd7f32}
-  .lb-row.lb-me{border-color:rgba(93,235,143,.5);background:linear-gradient(135deg,rgba(39,174,96,.08),var(--panel))}
-  .lb-rank{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;color:var(--text-dim);min-width:28px;text-align:center;flex-shrink:0}
-  .lb-name{font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold-light);font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lb-pnl{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;flex-shrink:0;text-align:right}
-  .lb-pnl.pos{color:var(--green)}.lb-pnl.neg{color:var(--red)}
-  .lb-sub{font-size:.68rem;color:var(--text-dim);margin-top:2px}
-  .lb-you-badge{font-size:.6rem;background:rgba(93,235,143,.15);border:1px solid rgba(93,235,143,.35);color:#7fffc4;border-radius:8px;padding:1px 6px;letter-spacing:.5px;flex-shrink:0}
-  .lb-wallet{font-size:.62rem;color:var(--text-dim);font-family:monospace;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
-  /* AUTH SCREENS */
-  .auth-screen{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px;
-    background-image:radial-gradient(ellipse at 20% 0%,rgba(100,60,10,.25) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(80,40,5,.25) 0%,transparent 60%)}
-  .auth-box{background:linear-gradient(180deg,#3d2510,#2d1a0a);border:2px solid var(--gold-dark);border-radius:14px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.9),0 0 60px rgba(180,120,20,.08)}
-  .auth-title{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
-  .auth-sub{font-size:.82rem;color:var(--text-dim);margin-bottom:14px;line-height:1.5}
-  .auth-field-label{text-align:left;font-size:.68rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;margin-top:10px}
-  .auth-input{width:100%;background:rgba(0,0,0,.4);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'Crimson Text',serif;font-size:1rem;outline:none;transition:border-color .2s;display:block;margin-bottom:2px}
-  .auth-input:focus{border-color:var(--gold-dark)}
-  .auth-error{font-size:.74rem;color:#ff9999;min-height:18px;text-align:left;margin:5px 0 6px;padding-left:2px;font-style:italic}
-  .auth-btn{width:100%;background:linear-gradient(135deg,#4a2e10,#2d1a08);border:2px solid var(--gold-dark);border-radius:8px;padding:11px;font-family:'Cinzel',serif;font-size:.86rem;font-weight:700;color:var(--gold);cursor:pointer;transition:all .15s;letter-spacing:1px;text-transform:uppercase;margin-top:8px}
-  .auth-btn:hover{background:linear-gradient(135deg,#5a3a14,#3a2010);box-shadow:0 0 12px rgba(240,192,64,.2)}
-  .auth-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-  .auth-link{font-size:.78rem;color:var(--gold);cursor:pointer;text-decoration:underline;letter-spacing:.3px}
-  .auth-link:hover{color:var(--gold-light)}
-  /* COUNTDOWN */
-  .countdown-ring{display:flex;align-items:center;justify-content:center;gap:4px;margin:18px 0 6px}
-  .countdown-num{background:linear-gradient(180deg,#3a2208,#251505);border:2px solid var(--gold-dark);border-radius:8px;min-width:56px;padding:10px 8px;font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--gold);text-align:center;line-height:1;box-shadow:0 0 16px rgba(240,192,64,.12),inset 0 1px 0 rgba(255,215,0,.1)}
-  .countdown-sep{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:700;color:var(--gold-dark);padding:0 2px;margin-top:-6px}
-  .countdown-labels{display:flex;justify-content:center;gap:4px;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px}
-  .countdown-labels span{min-width:56px;text-align:center}
-  .wallet-addr-header{font-size:.56rem;color:rgba(201,169,110,.35);margin-top:1px;font-family:monospace;letter-spacing:.5px}
-
-  /* AUTH MODALS (popups over countdown) */
-  .auth-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px}
-  .auth-modal-box{background:linear-gradient(180deg,#3d2510,#2d1a0a);border:2px solid var(--gold-dark);border-radius:14px;padding:24px 22px 20px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.9);position:relative;max-height:90vh;overflow-y:auto}
-  .auth-modal-close{position:absolute;top:10px;right:12px;background:transparent;border:none;color:var(--text-dim);font-size:1.1rem;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px;transition:color .15s}
-  .auth-modal-close:hover{color:var(--gold)}
-
-
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;
     display:flex;align-items:flex-start;justify-content:center;
     padding:0 12px;overflow-y:auto;
     opacity:0;pointer-events:none;transition:opacity .2s}
@@ -456,75 +403,135 @@
   ::-webkit-scrollbar{width:4px}
   ::-webkit-scrollbar-track{background:var(--bg)}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+  /* COUNTDOWN GATE */
+  #gate{position:fixed;inset:0;z-index:9000;background:var(--bg);
+    background-image:radial-gradient(ellipse at 20% 0%,rgba(100,60,10,.35) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 100%,rgba(80,40,5,.35) 0%,transparent 60%);
+    display:flex;align-items:center;justify-content:center;padding:20px}
+  #gate.hidden{display:none}
+  .gate-box{text-align:center;max-width:360px;width:100%}
+  .gate-logo{font-size:3rem;margin-bottom:10px;filter:drop-shadow(0 0 18px rgba(240,192,64,.4))}
+  .gate-title{font-family:'Cinzel',serif;font-size:1.6rem;font-weight:700;color:var(--gold);letter-spacing:4px;text-shadow:0 0 24px rgba(240,192,64,.5);margin-bottom:4px}
+  .gate-subtitle{font-size:.72rem;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+  .gate-cd-ring{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px}
+  .gate-cd-num{background:linear-gradient(180deg,#3a2208,#251505);border:2px solid var(--gold-dark);border-radius:10px;min-width:68px;padding:12px 8px;font-family:'Cinzel',serif;font-size:2.4rem;font-weight:700;color:var(--gold);text-align:center;line-height:1;box-shadow:0 0 20px rgba(240,192,64,.12),inset 0 1px 0 rgba(255,215,0,.1)}
+  .gate-cd-sep{font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--gold-dark);margin-top:-8px}
+  .gate-cd-labels{display:flex;justify-content:center;gap:6px;font-size:.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  .gate-cd-labels span{min-width:68px;text-align:center}
+  .gate-cd-date{font-size:.7rem;color:var(--text-dim);margin-bottom:14px;letter-spacing:.5px}
+  .gate-cd-msg{font-size:.82rem;color:#7fffc4;margin-bottom:14px;min-height:20px}
+  .gate-divider{border:none;border-top:1px solid rgba(107,74,34,.4);margin:16px 0}
+  .gate-reg-note{font-size:.74rem;color:var(--text-dim);margin-bottom:12px}
+  .gate-btn-row{display:flex;gap:10px}
+  .gate-btn{flex:1;border-radius:8px;padding:11px;font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.8px;text-transform:uppercase}
+  .gate-btn-primary{background:linear-gradient(135deg,#4a2e10,#2d1a08);border:2px solid var(--gold-dark);color:var(--gold)}
+  .gate-btn-primary:hover{background:linear-gradient(135deg,#5a3a14,#3a2010);box-shadow:0 0 12px rgba(240,192,64,.2)}
+  .gate-btn-secondary{background:transparent;border:1.5px solid var(--border);color:var(--text-dim)}
+  .gate-btn-secondary:hover{border-color:var(--gold-dark);color:var(--text)}
+  .auth-overlay{position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+  .auth-overlay.open{opacity:1;pointer-events:all}
+  .auth-modal-box{background:linear-gradient(180deg,#3d2510,#2d1a0a);border:2px solid var(--gold-dark);border-radius:14px;padding:24px 22px 20px;max-width:320px;width:100%;position:relative;box-shadow:0 8px 48px rgba(0,0,0,.9);max-height:90vh;overflow-y:auto;transform:scale(.94);transition:transform .22s cubic-bezier(.34,1.2,.64,1)}
+  .auth-overlay.open .auth-modal-box{transform:scale(1)}
+  .auth-modal-close{position:absolute;top:10px;right:12px;background:transparent;border:none;color:var(--text-dim);font-size:1.1rem;cursor:pointer;padding:2px 6px;border-radius:4px;transition:color .15s}
+  .auth-modal-close:hover{color:var(--gold)}
+  .auth-modal-icon{font-size:1.8rem;margin-bottom:6px}
+  .auth-modal-title{font-family:'Cinzel',serif;font-size:1.05rem;font-weight:700;color:var(--gold);letter-spacing:1.5px;margin-bottom:4px}
+  .auth-modal-sub{font-size:.78rem;color:var(--text-dim);margin-bottom:14px;line-height:1.5}
+  .auth-field-lbl{text-align:left;font-size:.66rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.2px;margin:10px 0 4px}
+  .auth-inp{width:100%;background:rgba(0,0,0,.4);border:1.5px solid var(--border);border-radius:7px;padding:10px 12px;color:var(--text);font-family:'Crimson Text',serif;font-size:.98rem;outline:none;transition:border-color .2s;display:block}
+  .auth-inp:focus{border-color:var(--gold-dark)}
+  .auth-err{font-size:.72rem;color:#ff9999;min-height:16px;text-align:left;margin:5px 0 4px;padding-left:2px;font-style:italic}
+  .auth-submit-btn{width:100%;background:linear-gradient(135deg,#4a2e10,#2d1a08);border:2px solid var(--gold-dark);border-radius:8px;padding:10px;font-family:'Cinzel',serif;font-size:.84rem;font-weight:700;color:var(--gold);cursor:pointer;transition:all .15s;letter-spacing:.8px;text-transform:uppercase;margin-top:8px}
+  .auth-submit-btn:hover{background:linear-gradient(135deg,#5a3a14,#3a2010);box-shadow:0 0 10px rgba(240,192,64,.18)}
+  .auth-submit-btn:disabled{opacity:.4;cursor:not-allowed}
+  .auth-lnk{font-size:.76rem;color:var(--gold);cursor:pointer;text-decoration:underline}
+  .auth-lnk:hover{color:var(--gold-light)}
+  .auth-switch-row{margin-top:10px;text-align:center;font-size:.76rem;color:var(--text-dim)}
+  .live-table-wrap{overflow-x:auto;margin-bottom:12px;border-radius:8px;border:1.5px solid var(--border)}
+  .live-table{width:100%;border-collapse:collapse;font-size:.74rem}
+  .live-table th{background:linear-gradient(180deg,#3d2510,#2d1a0a);color:var(--gold);font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.8px;text-transform:uppercase;padding:7px 8px;border-bottom:1.5px solid var(--border);white-space:nowrap;text-align:left}
+  .live-table td{padding:7px 8px;border-bottom:1px solid rgba(107,74,34,.25);vertical-align:middle;color:var(--text);white-space:nowrap}
+  .live-table tr:last-child td{border-bottom:none}
+  .live-table tr:hover td{background:rgba(255,200,60,.04)}
+  .live-table tr.me-row td{background:rgba(39,174,96,.05)}
+  .lt-name{font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold-light);font-weight:600}
+  .lt-wallet{font-size:.6rem;color:var(--text-dim);font-family:monospace}
+  .lt-badge{font-family:'Cinzel',serif;font-size:.64rem;font-weight:700;padding:2px 6px;border-radius:6px}
+  .lt-badge.long{background:rgba(39,174,96,.2);border:1px solid rgba(39,174,96,.45);color:#7fffc4}
+  .lt-badge.short{background:rgba(192,57,43,.2);border:1px solid rgba(192,57,43,.45);color:#ffb3b3}
+  .lt-pnl-pos{color:var(--green);font-weight:700;font-family:'Cinzel',serif}
+  .lt-pnl-neg{color:var(--red);font-weight:700;font-family:'Cinzel',serif}
+  .lb-table-wrap{overflow-x:auto;border-radius:8px;border:1.5px solid var(--border)}
+  .lb-table{width:100%;border-collapse:collapse;font-size:.74rem}
+  .lb-table th{background:linear-gradient(180deg,#3d2510,#2d1a0a);color:var(--gold);font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.8px;text-transform:uppercase;padding:7px 8px;border-bottom:1.5px solid var(--border);text-align:left}
+  .lb-table td{padding:8px 8px;border-bottom:1px solid rgba(107,74,34,.25);vertical-align:middle;color:var(--text)}
+  .lb-table tr:last-child td{border-bottom:none}
+  .lb-table tr.me-row td{background:rgba(39,174,96,.05)}
+  .lb-rank-cell{font-family:'Cinzel',serif;font-size:1.1rem;text-align:center;width:36px}
+  .lb-uname{font-family:'Cinzel',serif;font-size:.76rem;color:var(--gold-light);font-weight:600}
+  .lb-wallet-cell{font-size:.6rem;color:var(--text-dim);font-family:monospace}
+  .lb-pnl-cell{font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;text-align:right}
+  .lb-pnl-cell.pos{color:var(--green)}.lb-pnl-cell.neg{color:var(--red)}
+  .lb-wealth-cell{font-size:.72rem;color:var(--text-dim);text-align:right}
+  .lb-you-tag{font-size:.58rem;background:rgba(93,235,143,.15);border:1px solid rgba(93,235,143,.35);color:#7fffc4;border-radius:6px;padding:1px 5px;margin-left:4px;vertical-align:middle}
 </style>
 </head>
 <body>
 
-<!-- COUNTDOWN SCREEN (always visible until open) -->
-<div class="auth-screen" id="countdown-screen" style="display:none">
-  <div class="auth-box">
-    <div style="font-size:2.5rem;margin-bottom:8px">⚔️</div>
-    <div class="auth-title">Trade Together</div>
-    <div class="auth-sub" id="cd-sub">Tournament opens at <strong style="color:var(--gold)">3:21 PM ET</strong></div>
-    <div class="countdown-ring">
-      <div class="countdown-num" id="cd-hours">00</div>
-      <div class="countdown-sep">:</div>
-      <div class="countdown-num" id="cd-mins">00</div>
-      <div class="countdown-sep">:</div>
-      <div class="countdown-num" id="cd-secs">00</div>
+<!-- COUNTDOWN GATE -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">&#9876;&#65039;</div>
+    <div class="gate-title">Trade Together</div>
+    <div class="gate-subtitle">Leveraged Commodity Exchange</div>
+    <div class="gate-cd-ring">
+      <div class="gate-cd-num" id="cd-h">00</div><div class="gate-cd-sep">:</div>
+      <div class="gate-cd-num" id="cd-m">00</div><div class="gate-cd-sep">:</div>
+      <div class="gate-cd-num" id="cd-s">00</div>
     </div>
-    <div class="countdown-labels">
-      <span>Hours</span><span>Mins</span><span>Secs</span>
-    </div>
-    <div id="cd-date-label" style="font-size:.72rem;color:var(--text-dim);margin-top:8px;letter-spacing:1px"></div>
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(107,74,34,.3)">
-      <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:12px">Register now to be ready when the tournament opens.</div>
-      <button class="auth-btn" onclick="openAuthModal('register-modal')" style="margin-bottom:8px">Create Account →</button>
-      <button class="auth-btn" onclick="openAuthModal('login-modal')" style="background:transparent;border-color:var(--border);color:var(--text-dim);font-size:.8rem;padding:9px">Already have an account? Sign In</button>
+    <div class="gate-cd-labels"><span>Hours</span><span>Mins</span><span>Secs</span></div>
+    <div class="gate-cd-date" id="cd-date"></div>
+    <div class="gate-cd-msg" id="cd-msg"></div>
+    <hr class="gate-divider">
+    <div class="gate-reg-note">Register now &#8212; be ready when the tournament opens.</div>
+    <div class="gate-btn-row">
+      <button class="gate-btn gate-btn-primary" onclick="openAuthModal('register')">Create Account</button>
+      <button class="gate-btn gate-btn-secondary" onclick="openAuthModal('login')">Sign In</button>
     </div>
   </div>
 </div>
-
-<!-- LOGIN MODAL -->
-<div class="auth-modal-overlay" id="login-modal" style="display:none" onclick="closeAuthModalOnBg(event,'login-modal')">
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="auth-overlay">
   <div class="auth-modal-box">
-    <button class="auth-modal-close" onclick="closeAuthModal('login-modal')">✕</button>
-    <div style="font-size:1.8rem;margin-bottom:6px">⚔️</div>
-    <div class="auth-title" style="font-size:1rem;margin-bottom:4px">Sign In</div>
-    <div class="auth-sub" style="font-size:.78rem;margin-bottom:10px">Enter your credentials to access the exchange.</div>
-    <div class="auth-field-label">Username</div>
-    <input class="auth-input" id="login-username" type="text" maxlength="20" placeholder="Your trader name" autocomplete="off">
-    <div class="auth-field-label">Password</div>
-    <input class="auth-input" id="login-password" type="password" maxlength="64" placeholder="Your password">
-    <div id="login-error" class="auth-error"></div>
-    <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
-    <div style="margin-top:10px;text-align:center">
-      <span style="font-size:.76rem;color:var(--text-dim)">No account? </span>
-      <span class="auth-link" onclick="closeAuthModal('login-modal');openAuthModal('register-modal')">Create one →</span>
+    <button class="auth-modal-close" onclick="closeAuthModal()">&#x2715;</button>
+    <div id="auth-panel-login">
+      <div class="auth-modal-icon">&#9876;&#65039;</div>
+      <div class="auth-modal-title">Sign In</div>
+      <div class="auth-modal-sub">Enter your credentials to access the exchange.</div>
+      <div class="auth-field-lbl">Username</div>
+      <input class="auth-inp" id="login-user" type="text" maxlength="20" placeholder="Trader name" autocomplete="off">
+      <div class="auth-field-lbl">Password</div>
+      <input class="auth-inp" id="login-pass" type="password" maxlength="64" placeholder="Password">
+      <div class="auth-err" id="login-err"></div>
+      <button class="auth-submit-btn" id="login-btn" onclick="doLogin()">Sign In &rarr;</button>
+      <div class="auth-switch-row">No account? <span class="auth-lnk" onclick="switchAuthPanel('register')">Create one &rarr;</span></div>
     </div>
-  </div>
-</div>
-
-<!-- REGISTER MODAL -->
-<div class="auth-modal-overlay" id="register-modal" style="display:none" onclick="closeAuthModalOnBg(event,'register-modal')">
-  <div class="auth-modal-box">
-    <button class="auth-modal-close" onclick="closeAuthModal('register-modal')">✕</button>
-    <div style="font-size:1.8rem;margin-bottom:6px">⚔️</div>
-    <div class="auth-title" style="font-size:1rem;margin-bottom:4px">Create Account</div>
-    <div class="auth-sub" style="font-size:.78rem;margin-bottom:10px">Register for the tournament. Wallet must be unique.</div>
-    <div class="auth-field-label">Username</div>
-    <input class="auth-input" id="reg-username" type="text" maxlength="20" placeholder="e.g. DragonSlayer99" autocomplete="off">
-    <div class="auth-field-label">Password</div>
-    <input class="auth-input" id="reg-password" type="password" maxlength="64" placeholder="Min 6 characters">
-    <div class="auth-field-label">Confirm Password</div>
-    <input class="auth-input" id="reg-password2" type="password" maxlength="64" placeholder="Repeat password">
-    <div class="auth-field-label">Wallet Address <span style="color:#ff9999;font-size:.65rem">*required · unique</span></div>
-    <input class="auth-input" id="reg-wallet" type="text" maxlength="100" placeholder="0x… or your wallet address" style="font-size:.82rem;letter-spacing:.5px">
-    <div id="reg-error" class="auth-error"></div>
-    <button class="auth-btn" id="reg-btn" onclick="doRegister()">Create Account →</button>
-    <div style="margin-top:10px;text-align:center">
-      <span style="font-size:.76rem;color:var(--text-dim)">Have an account? </span>
-      <span class="auth-link" onclick="closeAuthModal('register-modal');openAuthModal('login-modal')">Sign in →</span>
+    <div id="auth-panel-register" style="display:none">
+      <div class="auth-modal-icon">&#9876;&#65039;</div>
+      <div class="auth-modal-title">Create Account</div>
+      <div class="auth-modal-sub">Register for the tournament. Wallet must be unique.</div>
+      <div class="auth-field-lbl">Username</div>
+      <input class="auth-inp" id="reg-user" type="text" maxlength="20" placeholder="e.g. DragonSlayer99" autocomplete="off">
+      <div class="auth-field-lbl">Password</div>
+      <input class="auth-inp" id="reg-pass" type="password" maxlength="64" placeholder="Min 6 characters">
+      <div class="auth-field-lbl">Confirm Password</div>
+      <input class="auth-inp" id="reg-pass2" type="password" maxlength="64" placeholder="Repeat password">
+      <div class="auth-field-lbl">Wallet Address <span style="color:#ff9999;font-size:.63rem">*required &middot; unique</span></div>
+      <input class="auth-inp" id="reg-wallet" type="text" maxlength="100" placeholder="0x&hellip; or your wallet address" style="font-size:.82rem;letter-spacing:.4px">
+      <div class="auth-err" id="reg-err"></div>
+      <button class="auth-submit-btn" id="reg-btn" onclick="doRegister()">Create Account &rarr;</button>
+      <div class="auth-switch-row">Have an account? <span class="auth-lnk" onclick="switchAuthPanel('login')">Sign in &rarr;</span></div>
     </div>
   </div>
 </div>
@@ -555,14 +562,17 @@
     <span style="font-size:.72rem;color:var(--text-dim)">PvE</span>
   </div>
   <div id="save-indicator" style="font-size:.58rem;color:rgba(201,169,110,.4);margin-top:3px;letter-spacing:1px">💾 Auto-saving</div>
-  <div id="wallet-addr-display" class="wallet-addr-header"></div>
+  <div id="wallet-addr-display" style="font-size:.56rem;color:rgba(201,169,110,.35);margin-top:1px;font-family:monospace;letter-spacing:.5px"></div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="showPage('market')">🏪 Market</div>
+  <div class="tab active" onclick="showPage('market')">&#127978; Market</div>
+  <div class="tab" onclick="showPage('portfolio')">&#128230; Positions</div>
+  <div class="tab" onclick="showPage('livetrades')">&#128308; Live</div>
+  <div class="tab" onclick="showPage('leaderboard')">&#127942; Board</div>
+  <div class="tab" onclick="showPage('history')">&#128220; History</div>
+</div>
   <div class="tab" onclick="showPage('portfolio')">📦 Positions</div>
-  <div class="tab" onclick="showPage('livetrades')">🔴 Live</div>
-  <div class="tab" onclick="showPage('leaderboard')">🏆 Board</div>
   <div class="tab" onclick="showPage('history')">📜 History</div>
 </div>
 
@@ -666,31 +676,22 @@
 <div id="page-livetrades" class="page">
   <div class="main">
     <div class="market-header" style="margin-bottom:12px">
-      <div class="section-title">🔴 Live Trades</div>
-      <div class="tick-indicator">
-        <div class="tick-dot"></div>
-        <span id="live-count-label" style="font-size:.72rem;color:var(--text-dim)">Loading...</span>
-      </div>
+      <div class="section-title">&#128308; Live Trades</div>
+      <div class="tick-indicator"><div class="tick-dot"></div><span id="live-count" style="font-size:.7rem;color:var(--text-dim)">0 positions</span></div>
     </div>
-    <div id="live-trades-list">
-      <div class="hist-empty"><div class="hist-empty-icon">📡</div>No live trades from other players yet.</div>
-    </div>
+    <div id="live-table-container"><div class="hist-empty"><div class="hist-empty-icon">&#128225;</div>No live trades yet.</div></div>
   </div>
 </div>
-
 <!-- LEADERBOARD PAGE -->
 <div id="page-leaderboard" class="page">
   <div class="main">
     <div class="market-header" style="margin-bottom:12px">
-      <div class="section-title">🏆 Leaderboard</div>
-      <div style="font-size:.68rem;color:var(--text-dim);letter-spacing:1px">Best P&amp;L</div>
+      <div class="section-title">&#127942; Leaderboard</div>
+      <div style="font-size:.68rem;color:var(--text-dim);letter-spacing:1px">P&amp;L Rankings</div>
     </div>
-    <div id="leaderboard-list">
-      <div class="hist-empty"><div class="hist-empty-icon">🏆</div>No players on the board yet.</div>
-    </div>
+    <div id="lb-table-container"><div class="hist-empty"><div class="hist-empty-icon">&#127942;</div>No players yet.</div></div>
   </div>
 </div>
-
 <!-- WARNING POPUP — too much position size -->
 <div class="warning-overlay" id="warning-overlay">
   <div class="warning-box">
@@ -2218,17 +2219,7 @@ function renderHistory() {
 }
 
 // ── PAGE ──────────────────────────────────────────────────────────────────────
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
-  document.getElementById('page-' + name).classList.add('active');
-  var pages = ['market','portfolio','livetrades','leaderboard','history'];
-  var idx = pages.indexOf(name);
-  if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
-  if (name === 'history')     renderHistory();
-  if (name === 'livetrades')  { saveState().then(renderLiveTrades); }
-  if (name === 'leaderboard') { saveState().then(renderLeaderboard); }
-}
+/* showPage defined in new JS */
 
 // ── TICK ──────────────────────────────────────────────────────────────────────
 function tick() {
@@ -2282,433 +2273,225 @@ function resetFundsAndHistory() {
   showToast('Fresh start! 10,000 PvE loaded.', 'tp-hit');
 }
 
-// ── AUTH & COUNTDOWN ──────────────────────────────────────────────────────────
-var SAVE_KEY         = 'tradeTogether_v1';
-var ACCOUNTS_KEY     = 'tt_accounts';
-var WALLET_INDEX_KEY = 'tt_wallets';
-var saveTimer        = null;
-var myUsername       = null;
-var myWalletAddress  = null;
-
-function fmtWallet(addr) {
-  if (!addr) return '';
-  if (addr.length <= 12) return addr;
-  return addr.slice(0, 6) + '\u2026' + addr.slice(-4);
-}
-
-function validateWallet(addr) {
-  if (!addr || addr.length < 8) return false;
-  return /^(0x[0-9a-fA-F]{10,}|bc1[a-zA-HJ-NP-Z0-9]{6,}|[13][a-zA-HJ-NP-Z1-9]{25,}|[a-zA-Z0-9]{26,})$/.test(addr);
-}
-
-function pad2(n) { return n < 10 ? '0' + n : '' + n; }
-
-function getTournamentOpen() {
-  var now = new Date();
-  var jan = new Date(now.getFullYear(), 0, 1);
-  var jul = new Date(now.getFullYear(), 6, 1);
-  var stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-  var isDST = now.getTimezoneOffset() < stdOffset;
-  var etOffset = isDST ? 4 : 5;
-  var openUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 15 + etOffset, 21, 0));
-  if (now >= openUTC) openUTC = new Date(openUTC.getTime() + 86400000);
-  return openUTC;
-}
-
-function isTournamentOpen() {
-  var now = new Date();
-  var jan = new Date(now.getFullYear(), 0, 1);
-  var jul = new Date(now.getFullYear(), 6, 1);
-  var stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-  var isDST = now.getTimezoneOffset() < stdOffset;
-  var etOffset = isDST ? 4 : 5;
-  var openUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 15 + etOffset, 21, 0));
-  return now >= openUTC;
-}
-
-var cdInterval = null;
-function startCountdown() {
-  clearInterval(cdInterval);
-  function cdTick() {
-    if (isTournamentOpen()) {
-      clearInterval(cdInterval);
-      hideAllAuthScreens();
-      if (myUsername) enterGame();
-      else openAuthModal('login-modal');
-      return;
-    }
-    var open = getTournamentOpen();
-    var diff = Math.max(0, open - new Date());
-    var h = Math.floor(diff / 3600000);
-    var m = Math.floor((diff % 3600000) / 60000);
-    var s = Math.floor((diff % 60000) / 1000);
-    document.getElementById('cd-hours').textContent = pad2(h);
-    document.getElementById('cd-mins').textContent  = pad2(m);
-    document.getElementById('cd-secs').textContent  = pad2(s);
-    var label = document.getElementById('cd-date-label');
-    if (label) {
-      try {
-        label.textContent = open.toLocaleString('en-US', {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'});
-      } catch(e) { label.textContent = ''; }
-    }
+// AUTH & GATE
+var SAVE_KEY='tradeTogether_v1',ACCOUNTS_KEY='tt_accounts',WALLET_IDX_KEY='tt_wallets';
+var saveTimer=null,myUsername=null,myWalletAddress=null;
+function etOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?4:5;}
+function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+etOff(),50,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
+function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+etOff(),50,0));}
+function pad2(n){return n<10?'0'+n:''+n;}
+var cdInt=null;
+function startGateCountdown(){
+  clearInterval(cdInt);
+  function t(){
+    if(isTournamentOpen()){clearInterval(cdInt);onTournamentOpen();return;}
+    var d=Math.max(0,getTournamentOpen()-new Date());
+    document.getElementById('cd-h').textContent=pad2(Math.floor(d/3600000));
+    document.getElementById('cd-m').textContent=pad2(Math.floor((d%3600000)/60000));
+    document.getElementById('cd-s').textContent=pad2(Math.floor((d%60000)/1000));
+    var el=document.getElementById('cd-date');
+    if(el){try{el.textContent=getTournamentOpen().toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'});}catch(e){}}
   }
-  cdTick();
-  cdInterval = setInterval(cdTick, 1000);
+  t();cdInt=setInterval(t,1000);
 }
-
-function showAuthScreen(id) {
-  ['countdown-screen'].forEach(function(sid) {
-    var el = document.getElementById(sid);
-    if (el) el.style.display = sid === id ? 'flex' : 'none';
-  });
-}
-
-function hideAllAuthScreens() {
-  var el = document.getElementById('countdown-screen');
-  if (el) el.style.display = 'none';
-  closeAuthModal('login-modal');
-  closeAuthModal('register-modal');
-}
-
-function openAuthModal(id) {
-  var el = document.getElementById(id);
-  if (el) el.style.display = 'flex';
-}
-
-function closeAuthModal(id) {
-  var el = document.getElementById(id);
-  if (el) el.style.display = 'none';
-}
-
-function closeAuthModalOnBg(e, id) {
-  if (e.target === e.currentTarget) closeAuthModal(id);
-}
-
-async function hashPassword(pw) {
-  try {
-    var msgBuf  = new TextEncoder().encode(pw);
-    var hashBuf = await crypto.subtle.digest('SHA-256', msgBuf);
-    return Array.from(new Uint8Array(hashBuf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-  } catch(e) {
-    // Fallback simple hash if SubtleCrypto unavailable
-    var h = 0;
-    for (var i = 0; i < pw.length; i++) h = (Math.imul(31, h) + pw.charCodeAt(i)) | 0;
-    return 'fb_' + Math.abs(h).toString(16);
+function onTournamentOpen(){
+  if(myUsername){enterGame();}
+  else{
+    ['cd-h','cd-m','cd-s'].forEach(function(id){document.getElementById(id).textContent='00';});
+    var el=document.getElementById('cd-date');if(el)el.textContent='Tournament is now OPEN!';
+    openAuthModal('login');
   }
 }
-
-async function getAccounts() {
-  try { var r = await window.storage.get(ACCOUNTS_KEY, true); return r ? JSON.parse(r.value) : {}; } catch(e) { return {}; }
+function openAuthModal(panel){switchAuthPanel(panel);document.getElementById('auth-overlay').classList.add('open');}
+function closeAuthModal(){document.getElementById('auth-overlay').classList.remove('open');}
+function switchAuthPanel(panel){
+  document.getElementById('auth-panel-login').style.display=panel==='login'?'':'none';
+  document.getElementById('auth-panel-register').style.display=panel==='register'?'':'none';
 }
-async function getWalletIndex() {
-  try { var r = await window.storage.get(WALLET_INDEX_KEY, true); return r ? JSON.parse(r.value) : {}; } catch(e) { return {}; }
-}
-
-async function doRegister() {
-  var btn      = document.getElementById('reg-btn');
-  var errEl    = document.getElementById('reg-error');
-  var username = document.getElementById('reg-username').value.trim();
-  var pw       = document.getElementById('reg-password').value;
-  var pw2      = document.getElementById('reg-password2').value;
-  var wallet   = document.getElementById('reg-wallet').value.trim();
-  errEl.textContent = '';
-  if (!username || username.length < 2)      { errEl.textContent = 'Username must be at least 2 characters.'; return; }
-  if (!/^[a-zA-Z0-9_]+$/.test(username))     { errEl.textContent = 'Letters, numbers and underscores only.'; return; }
-  if (!pw || pw.length < 6)                  { errEl.textContent = 'Password must be at least 6 characters.'; return; }
-  if (pw !== pw2)                            { errEl.textContent = 'Passwords do not match.'; return; }
-  if (!wallet)                               { errEl.textContent = 'Wallet address is required.'; return; }
-  if (!validateWallet(wallet))              { errEl.textContent = 'Enter a valid wallet address (ETH 0x\u2026, BTC, etc).'; return; }
-  btn.disabled = true; btn.textContent = 'Checking\u2026';
-  try {
-    var accounts    = await getAccounts();
-    var walletIndex = await getWalletIndex();
-    if (accounts[username.toLowerCase()]) {
-      errEl.textContent = 'Username already taken.';
-      btn.disabled = false; btn.textContent = 'Create Account \u2192'; return;
-    }
-    if (walletIndex[wallet.toLowerCase()]) {
-      errEl.textContent = 'This wallet is already linked to another account.';
-      btn.disabled = false; btn.textContent = 'Create Account \u2192'; return;
-    }
-    var hash = await hashPassword(pw);
-    accounts[username.toLowerCase()] = { username: username, passwordHash: hash, wallet: wallet, createdAt: Date.now() };
-    walletIndex[wallet.toLowerCase()] = username.toLowerCase();
-    await window.storage.set(ACCOUNTS_KEY,     JSON.stringify(accounts),    true);
-    await window.storage.set(WALLET_INDEX_KEY, JSON.stringify(walletIndex), true);
-    myUsername      = username;
-    myWalletAddress = wallet;
-    await window.storage.set('username',      myUsername);
-    await window.storage.set('walletAddress', myWalletAddress);
-    var addrEl = document.getElementById('wallet-addr-display');
-    if (addrEl) addrEl.textContent = fmtWallet(myWalletAddress);
-    closeAuthModal('register-modal');
-    var sub = document.getElementById('cd-sub');
-    if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Account created! Welcome, ' + username + '.</span><br>Tournament opens at <strong style="color:var(--gold)">3:21 PM ET</strong>';
-    if (!isTournamentOpen()) {
-      showAuthScreen('countdown-screen');
-      return;
-    }
-    enterGame();
-  } catch(e) {
-    errEl.textContent = 'Registration failed. Please try again.';
-    console.error(e);
-    btn.disabled = false; btn.textContent = 'Create Account \u2192';
-  }
-}
-
-async function doLogin() {
-  var btn      = document.getElementById('login-btn');
-  var errEl    = document.getElementById('login-error');
-  var username = document.getElementById('login-username').value.trim();
-  var pw       = document.getElementById('login-password').value;
-  errEl.textContent = '';
-  if (!username) { errEl.textContent = 'Enter your username.'; return; }
-  if (!pw)       { errEl.textContent = 'Enter your password.'; return; }
-  btn.disabled = true; btn.textContent = 'Signing in\u2026';
-  try {
-    var accounts = await getAccounts();
-    var record   = accounts[username.toLowerCase()];
-    if (!record) { errEl.textContent = 'Username not found.'; btn.disabled = false; btn.textContent = 'Sign In \u2192'; return; }
-    var hash = await hashPassword(pw);
-    if (hash !== record.passwordHash) { errEl.textContent = 'Incorrect password.'; btn.disabled = false; btn.textContent = 'Sign In \u2192'; return; }
-    myUsername      = record.username;
-    myWalletAddress = record.wallet;
-    await window.storage.set('username',      myUsername);
-    await window.storage.set('walletAddress', myWalletAddress);
-    var addrEl = document.getElementById('wallet-addr-display');
-    if (addrEl) addrEl.textContent = fmtWallet(myWalletAddress);
-    closeAuthModal('login-modal');
-    var sub = document.getElementById('cd-sub');
-    if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Signed in as ' + myUsername + '.</span><br>Tournament opens at <strong style="color:var(--gold)">3:21 PM ET</strong>';
-    if (!isTournamentOpen()) {
-      showAuthScreen('countdown-screen');
-      return;
-    }
-    enterGame();
-  } catch(e) {
-    errEl.textContent = 'Login failed. Please try again.';
-    console.error(e);
-    btn.disabled = false; btn.textContent = 'Sign In \u2192';
-  }
-}
-
-function enterGame() {
-  hideAllAuthScreens();
-  loadState().then(function(restored) {
-    renderAll();
-    saveState();
-    setInterval(tick, TICK_MS);
-    setInterval(saveState, 10000);
-    setInterval(refreshSharedViews, 4000);
-    window.addEventListener('resize', function(){ renderMarket(); });
-    if (!restored) showToast('Welcome, ' + myUsername + '! 10,000 PvE ready.', 'tp-hit');
-    else showToast('Welcome back, ' + myUsername + '!', 'tp-hit');
-  });
-}
-
-async function saveState() {
-  if (!myUsername) return;
-  try {
-    var itemSnapshots = ITEMS.map(function(item) {
-      return { id: item.id, price: item.price, trend: item.trend, volatility: item.volatility,
-               history: item.history.slice(-MAX_HISTORY), candles: item.candles.slice(-60) };
-    });
-    var openPnl = 0;
-    positions.forEach(function(pos) { openPnl += calcPnl(pos, getItem(pos.itemId).price); });
-    var marginLocked = 0;
-    positions.forEach(function(p) { marginLocked += p.margin; });
-    var totalWealth = wallet + marginLocked + openPnl;
-    var state = {
-      wallet: wallet, positions: positions, tradeHistory: tradeHistory,
-      posIdCounter: posIdCounter, tickCount: tickCount, chartMode: chartMode,
-      nextShiftAt: nextShiftAt, sessionBoundaries: sessionBoundaries,
-      items: itemSnapshots, savedAt: Date.now(),
-      username: myUsername, walletAddress: myWalletAddress,
-      totalWealth: totalWealth, totalPnl: totalWealth - STARTING_GP
-    };
-    await window.storage.set(SAVE_KEY + ':' + myUsername, JSON.stringify(state));
-    await window.storage.set('lb:' + myUsername, JSON.stringify({
-      username: myUsername, walletAddress: myWalletAddress,
-      totalWealth: totalWealth, totalPnl: totalWealth - STARTING_GP,
-      positions: positions.length, savedAt: Date.now()
-    }), true);
-    var livePosData = positions.map(function(pos) {
-      var item = getItem(pos.itemId);
-      var pnl = calcPnl(pos, item.price);
-      return { id: pos.id, username: myUsername, walletAddress: myWalletAddress,
-               itemId: pos.itemId, itemName: item.name, itemIcon: item.icon,
-               direction: pos.direction, leverage: pos.leverage, entryPrice: pos.entryPrice,
-               currentPrice: item.price, margin: pos.margin, pnl: Math.round(pnl),
-               sl: pos.sl, tp: pos.tp, savedAt: Date.now() };
-    });
-    await window.storage.set('live:' + myUsername, JSON.stringify(livePosData), true);
-    var ind = document.getElementById('save-indicator');
-    if (ind) {
-      ind.style.color = 'rgba(39,174,96,.8)'; ind.textContent = '\ud83d\udcbe Saved';
-      setTimeout(function() { ind.style.color = 'rgba(201,169,110,.4)'; ind.textContent = '\ud83d\udcbe Auto-saving'; }, 1500);
-    }
-  } catch(e) { console.warn('Save failed:', e); }
-}
-
-async function loadState() {
-  if (!myUsername) return false;
-  try {
-    var result = await window.storage.get(SAVE_KEY + ':' + myUsername);
-    if (!result) return false;
-    var state = JSON.parse(result.value);
-    if (!state || typeof state.wallet !== 'number') return false;
-    wallet = state.wallet; positions = state.positions || [];
-    tradeHistory = state.tradeHistory || []; posIdCounter = state.posIdCounter || 0;
-    tickCount = state.tickCount || 0; chartMode = state.chartMode || 'candle';
-    nextShiftAt = state.nextShiftAt || TREND_SHIFT_TICKS;
-    sessionBoundaries = state.sessionBoundaries || [];
-    if (state.walletAddress) myWalletAddress = state.walletAddress;
-    if (state.items && state.items.length) {
-      state.items.forEach(function(snap) {
-        var item = getItem(snap.id);
-        if (!item) return;
-        item.price = snap.price || item.price; item.trend = snap.trend || item.trend;
-        item.volatility = snap.volatility || item.volatility;
-        if (snap.history && snap.history.length) item.history = snap.history;
-        if (snap.candles && snap.candles.length) item.candles = snap.candles;
-        lastPrices[item.id] = item.price;
-      });
-    }
-    return true;
-  } catch(e) { console.warn('Load failed:', e); return false; }
-}
-
-function resetState() {
-  if (!confirm('Reset everything and start with 10,000 PvE? This cannot be undone.')) return;
-  wallet = STARTING_GP; positions = []; tradeHistory = []; posIdCounter = 0;
-  tickCount = 0; chartMode = 'candle'; nextShiftAt = TREND_SHIFT_TICKS;
-  ITEMS.forEach(function(item) {
-    item.price = item.basePrice || item.price; item.history = []; item.candles = []; item.candleTickBuf = [];
-    lastPrices[item.id] = item.price;
-    for (var i = 0; i < 20; i++) item.history.push(item.price);
-    for (var j = 0; j < 15; j++) item.candles.push({ o: item.price, h: item.price, l: item.price, c: item.price });
-  });
-  renderAll(); saveState();
-  showToast('Fresh start! 10,000 PvE loaded.', 'buy');
-}
-
-function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 5000); }
-
-async function refreshSharedViews() {
-  await saveState();
-  var liveEl = document.getElementById('page-livetrades');
-  var lbEl   = document.getElementById('page-leaderboard');
-  if (liveEl && liveEl.classList.contains('active')) await renderLiveTrades();
-  if (lbEl   && lbEl.classList.contains('active'))   await renderLeaderboard();
-}
-
-async function renderLiveTrades() {
-  var el = document.getElementById('live-trades-list');
-  var countEl = document.getElementById('live-count-label');
-  if (!el) return;
-  if (typeof window.storage === 'undefined') { el.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">\u26a0\ufe0f</div>Shared storage unavailable.</div>'; return; }
-  try {
-    var keysResult = await window.storage.list('live:', true);
-    if (!keysResult || !keysResult.keys || !keysResult.keys.length) {
-      el.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">📡</div>No live trades yet.</div>';
-      if (countEl) countEl.textContent = '0 positions'; return;
-    }
-    var allPositions = [];
-    for (var i = 0; i < keysResult.keys.length; i++) {
-      try {
-        var r = await window.storage.get(keysResult.keys[i], true);
-        if (!r) continue;
-        var arr = JSON.parse(r.value);
-        if (Array.isArray(arr)) arr.filter(function(p){ return Date.now() - p.savedAt < 60000; }).forEach(function(p){ allPositions.push(p); });
-      } catch(e2) {}
-    }
-    if (countEl) countEl.textContent = allPositions.length + ' position' + (allPositions.length !== 1 ? 's' : '');
-    if (!allPositions.length) { el.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">📡</div>No live trades right now.</div>'; return; }
-    allPositions.sort(function(a,b){ return Math.abs(b.pnl) - Math.abs(a.pnl); });
-    var html = '';
-    allPositions.forEach(function(pos) {
-      var isMe = pos.username === myUsername;
-      var dc = pos.direction === 'long' ? 'long-card' : 'short-card';
-      var db = pos.direction === 'long' ? 'long' : 'short';
-      var dl = pos.direction === 'long' ? 'LONG' : 'SHORT';
-      var pc = pos.pnl >= 0 ? 'pos' : 'neg';
-      html += '<div class="live-trade-card ' + dc + '"' + (isMe ? ' style="opacity:.7"' : '') + '>';
-      html += '<div class="hist-icon">' + pos.itemIcon + '</div>';
-      html += '<div style="flex:1;min-width:0">';
-      html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><div class="live-player-name">' + pos.username + (isMe ? ' (you)' : '') + '</div><span class="pos-badge ' + db + '">' + dl + ' ' + pos.leverage + 'x</span></div>';
-      if (pos.walletAddress) html += '<div style="font-size:.58rem;color:var(--text-dim);font-family:monospace;margin-bottom:2px">' + fmtWallet(pos.walletAddress) + '</div>';
-      html += '<div style="font-family:\'Cinzel\',serif;font-size:.78rem;color:var(--gold-light);font-weight:600">' + pos.itemName + '</div>';
-      html += '<div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Entry <span style="color:var(--text);font-weight:600">' + fmt(pos.entryPrice) + '</span> \u2192 Now <span style="color:var(--text);font-weight:600">' + fmt(pos.currentPrice) + '</span>';
-      if (pos.sl != null) html += ' &nbsp;<span style="color:#ff9999">SL:' + fmt(pos.sl) + '</span>';
-      if (pos.tp != null) html += ' &nbsp;<span style="color:#99ffcc">TP:' + fmt(pos.tp) + '</span>';
-      html += '</div></div>';
-      html += '<div class="live-trade-pnl ' + pc + '">' + fmtPnl(pos.pnl) + '<br><span style="font-size:.62rem;color:var(--text-dim);font-weight:400">PvE</span></div>';
-      html += '</div>';
-    });
-    el.innerHTML = html;
-  } catch(e) { console.warn('Live trades fetch failed:', e); }
-}
-
-async function renderLeaderboard() {
-  var el = document.getElementById('leaderboard-list');
-  if (!el) return;
-  if (typeof window.storage === 'undefined') { el.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">\u26a0\ufe0f</div>Shared storage unavailable.</div>'; return; }
-  try {
-    var keysResult = await window.storage.list('lb:', true);
-    if (!keysResult || !keysResult.keys || !keysResult.keys.length) { el.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">🏆</div>No players yet.</div>'; return; }
-    var players = [];
-    for (var i = 0; i < keysResult.keys.length; i++) {
-      try { var r = await window.storage.get(keysResult.keys[i], true); if (r) players.push(JSON.parse(r.value)); } catch(e2) {}
-    }
-    players.sort(function(a,b){ return b.totalPnl - a.totalPnl; });
-    var medals = ['\ud83e\udd47','\ud83e\udd48','\ud83e\udd49'];
-    var html = '';
-    players.forEach(function(p, idx) {
-      var isMe = p.username === myUsername;
-      var rank = idx + 1;
-      var rc = rank <= 3 ? 'lb-top' + rank : '';
-      var pc = p.totalPnl >= 0 ? 'pos' : 'neg';
-      var rs = rank <= 3 ? medals[idx] : '#' + rank;
-      html += '<div class="lb-row ' + rc + (isMe ? ' lb-me' : '') + '">';
-      html += '<div class="lb-rank">' + rs + '</div>';
-      html += '<div style="flex:1;min-width:0"><div class="lb-name">' + p.username + '</div>';
-      if (p.walletAddress) html += '<div class="lb-wallet">' + fmtWallet(p.walletAddress) + '</div>';
-      html += '<div class="lb-sub">' + (p.positions || 0) + ' open \u00b7 ' + fmt(Math.round(p.totalWealth)) + ' PvE</div></div>';
-      if (isMe) html += '<div class="lb-you-badge">YOU</div>';
-      html += '<div style="text-align:right"><div class="lb-pnl ' + pc + '">' + fmtPnl(Math.round(p.totalPnl)) + '</div><div class="lb-sub">PvE P&amp;L</div></div>';
-      html += '</div>';
-    });
-    el.innerHTML = html;
-  } catch(e) { console.warn('Leaderboard fetch failed:', e); }
-}
-
-window.addEventListener('load', async function() {
-  ['login-username','login-password'].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();}); });
-  ['reg-username','reg-password','reg-password2','reg-wallet'].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener('keydown',function(e){if(e.key==='Enter')doRegister();}); });
-  try {
-    var saved = await window.storage.get('username');
-    var savedWallet = await window.storage.get('walletAddress');
-    if (saved && saved.value) {
-      myUsername = saved.value;
-      if (savedWallet && savedWallet.value) myWalletAddress = savedWallet.value;
-      var addrEl = document.getElementById('wallet-addr-display');
-      if (addrEl && myWalletAddress) addrEl.textContent = fmtWallet(myWalletAddress);
-      if (isTournamentOpen()) { enterGame(); }
-      else {
-        var sub = document.getElementById('cd-sub');
-        if (sub) sub.innerHTML = '<span style="color:#7fffc4">\u2713 Welcome back, ' + myUsername + '!</span><br>Tournament opens at <strong style="color:var(--gold)">3:21 PM ET</strong>';
-        showAuthScreen('countdown-screen');
-        startCountdown();
-      }
-    } else {
-      if (isTournamentOpen()) openAuthModal('login-modal');
-      else { showAuthScreen('countdown-screen'); startCountdown(); }
-    }
-  } catch(e) {
-    if (isTournamentOpen()) openAuthModal('login-modal');
-    else { showAuthScreen('countdown-screen'); startCountdown(); }
-  }
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('auth-overlay').addEventListener('click',function(e){if(e.target===this)closeAuthModal();});
+  ['login-user','login-pass'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});});
+  ['reg-user','reg-pass','reg-pass2','reg-wallet'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')doRegister();});});
 });
+async function hashPw(pw){try{var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}catch(e){var h=0;for(var i=0;i<pw.length;i++)h=(Math.imul(31,h)+pw.charCodeAt(i))|0;return 'fb_'+Math.abs(h).toString(16);}}
+function valWallet(a){return a&&a.length>=8&&/^(0x[0-9a-fA-F]{10,}|bc1[a-zA-HJ-NP-Z0-9]{6,}|[13][a-zA-HJ-NP-Z1-9]{25,}|[a-zA-Z0-9]{26,})$/.test(a);}
+function fmtWallet(a){if(!a)return '';if(a.length<=12)return a;return a.slice(0,6)+'…'+a.slice(-4);}
+async function getAccounts(){try{var r=await window.storage.get(ACCOUNTS_KEY,true);return r?JSON.parse(r.value):{};}catch(e){return {};}}
+async function getWalletIdx(){try{var r=await window.storage.get(WALLET_IDX_KEY,true);return r?JSON.parse(r.value):{};}catch(e){return {};}}
+async function doRegister(){
+  var btn=document.getElementById('reg-btn'),err=document.getElementById('reg-err');
+  var user=document.getElementById('reg-user').value.trim(),pw=document.getElementById('reg-pass').value;
+  var pw2=document.getElementById('reg-pass2').value,wal=document.getElementById('reg-wallet').value.trim();
+  err.textContent='';
+  if(!user||user.length<2){err.textContent='Username must be at least 2 characters.';return;}
+  if(!/^[a-zA-Z0-9_]+$/.test(user)){err.textContent='Letters, numbers and underscores only.';return;}
+  if(!pw||pw.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  if(pw!==pw2){err.textContent='Passwords do not match.';return;}
+  if(!wal){err.textContent='Wallet address is required.';return;}
+  if(!valWallet(wal)){err.textContent='Enter a valid wallet address (ETH 0x…, BTC, etc).';return;}
+  btn.disabled=true;btn.textContent='Checking…';
+  try{
+    var ac=await getAccounts(),wi=await getWalletIdx();
+    if(ac[user.toLowerCase()]){err.textContent='Username already taken.';btn.disabled=false;btn.textContent='Create Account →';return;}
+    if(wi[wal.toLowerCase()]){err.textContent='Wallet already linked to another account.';btn.disabled=false;btn.textContent='Create Account →';return;}
+    var hash=await hashPw(pw);
+    ac[user.toLowerCase()]={username:user,passwordHash:hash,wallet:wal,createdAt:Date.now()};
+    wi[wal.toLowerCase()]=user.toLowerCase();
+    await window.storage.set(ACCOUNTS_KEY,JSON.stringify(ac),true);
+    await window.storage.set(WALLET_IDX_KEY,JSON.stringify(wi),true);
+    myUsername=user;myWalletAddress=wal;
+    await window.storage.set('username',myUsername);await window.storage.set('walletAddress',myWalletAddress);
+    closeAuthModal();
+    if(isTournamentOpen()){enterGame();return;}
+    document.getElementById('cd-msg').textContent='✓ Account created! Welcome, '+user+'.';
+  }catch(e){err.textContent='Registration failed. Try again.';console.error(e);}
+  btn.disabled=false;btn.textContent='Create Account →';
+}
+async function doLogin(){
+  var btn=document.getElementById('login-btn'),err=document.getElementById('login-err');
+  var user=document.getElementById('login-user').value.trim(),pw=document.getElementById('login-pass').value;
+  err.textContent='';
+  if(!user){err.textContent='Enter your username.';return;}
+  if(!pw){err.textContent='Enter your password.';return;}
+  btn.disabled=true;btn.textContent='Signing in…';
+  try{
+    var ac=await getAccounts(),rec=ac[user.toLowerCase()];
+    if(!rec){err.textContent='Username not found.';btn.disabled=false;btn.textContent='Sign In →';return;}
+    if(await hashPw(pw)!==rec.passwordHash){err.textContent='Incorrect password.';btn.disabled=false;btn.textContent='Sign In →';return;}
+    myUsername=rec.username;myWalletAddress=rec.wallet;
+    await window.storage.set('username',myUsername);await window.storage.set('walletAddress',myWalletAddress);
+    closeAuthModal();
+    if(isTournamentOpen()){enterGame();return;}
+    document.getElementById('cd-msg').textContent='✓ Signed in as '+myUsername+'. Waiting for open…';
+  }catch(e){err.textContent='Login failed. Try again.';console.error(e);}
+  btn.disabled=false;btn.textContent='Sign In →';
+}
+function enterGame(){
+  document.getElementById('gate').classList.add('hidden');
+  loadState().then(function(restored){
+    renderAll();saveState();
+    setInterval(tick,TICK_MS);setInterval(saveState,10000);setInterval(syncShared,4000);
+    window.addEventListener('resize',function(){renderMarket();});
+    var a=document.getElementById('wallet-addr-display');if(a&&myWalletAddress)a.textContent=fmtWallet(myWalletAddress);
+    if(!restored)showToast('Welcome, '+myUsername+'! 10,000 PvE ready.','tp-hit');
+    else showToast('Welcome back, '+myUsername+'!','tp-hit');
+  });
+}
+async function saveState(){
+  if(!myUsername)return;
+  try{
+    var snaps=ITEMS.map(function(i){return{id:i.id,price:i.price,trend:i.trend,volatility:i.volatility,history:i.history.slice(-MAX_HISTORY),candles:i.candles.slice(-60)};});
+    var op=0;positions.forEach(function(p){op+=calcPnl(p,getItem(p.itemId).price);});
+    var lk=0;positions.forEach(function(p){lk+=p.margin;});
+    var wealth=wallet+lk+op;
+    var state={wallet:wallet,positions:positions,tradeHistory:tradeHistory,posIdCounter:posIdCounter,tickCount:tickCount,chartMode:chartMode,nextShiftAt:nextShiftAt,sessionBoundaries:sessionBoundaries,items:snaps,savedAt:Date.now(),username:myUsername,walletAddress:myWalletAddress,totalWealth:wealth,totalPnl:wealth-STARTING_GP};
+    await window.storage.set(SAVE_KEY+':'+myUsername,JSON.stringify(state));
+    await window.storage.set('lb:'+myUsername,JSON.stringify({username:myUsername,walletAddress:myWalletAddress,totalWealth:wealth,totalPnl:wealth-STARTING_GP,positions:positions.length,savedAt:Date.now()}),true);
+    var live=positions.map(function(pos){var item=getItem(pos.itemId);return{id:pos.id,username:myUsername,walletAddress:myWalletAddress,itemId:pos.itemId,itemName:item.name,itemIcon:item.icon,direction:pos.direction,leverage:pos.leverage,entryPrice:pos.entryPrice,currentPrice:item.price,margin:pos.margin,pnl:Math.round(calcPnl(pos,item.price)),sl:pos.sl,tp:pos.tp,savedAt:Date.now()};});
+    await window.storage.set('live:'+myUsername,JSON.stringify(live),true);
+    var ind=document.getElementById('save-indicator');
+    if(ind){ind.style.color='rgba(39,174,96,.8)';ind.textContent='💾 Saved';setTimeout(function(){ind.style.color='rgba(201,169,110,.4)';ind.textContent='💾 Auto-saving';},1500);}
+  }catch(e){console.warn('Save failed:',e);}
+}
+async function loadState(){
+  if(!myUsername)return false;
+  try{
+    var r=await window.storage.get(SAVE_KEY+':'+myUsername);if(!r)return false;
+    var s=JSON.parse(r.value);if(!s||typeof s.wallet!=='number')return false;
+    wallet=s.wallet;positions=s.positions||[];tradeHistory=s.tradeHistory||[];posIdCounter=s.posIdCounter||0;tickCount=s.tickCount||0;chartMode=s.chartMode||'candle';nextShiftAt=s.nextShiftAt||TREND_SHIFT_TICKS;sessionBoundaries=s.sessionBoundaries||[];
+    if(s.walletAddress)myWalletAddress=s.walletAddress;
+    if(s.items)s.items.forEach(function(sn){var it=getItem(sn.id);if(!it)return;it.price=sn.price||it.price;it.trend=sn.trend||it.trend;it.volatility=sn.volatility||it.volatility;if(sn.history&&sn.history.length)it.history=sn.history;if(sn.candles&&sn.candles.length)it.candles=sn.candles;lastPrices[it.id]=it.price;});
+    return true;
+  }catch(e){return false;}
+}
+function resetState(){
+  if(!confirm('Reset everything and start with 10,000 PvE? This cannot be undone.'))return;
+  wallet=STARTING_GP;positions=[];tradeHistory=[];posIdCounter=0;tickCount=0;chartMode='candle';nextShiftAt=TREND_SHIFT_TICKS;
+  ITEMS.forEach(function(item){item.price=item.basePrice||item.price;item.history=[];item.candles=[];item.candleTickBuf=[];lastPrices[item.id]=item.price;for(var i=0;i<20;i++)item.history.push(item.price);for(var j=0;j<15;j++)item.candles.push({o:item.price,h:item.price,l:item.price,c:item.price});});
+  renderAll();saveState();showToast('Fresh start! 10,000 PvE loaded.','buy');
+}
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveState,5000);}
+async function syncShared(){
+  await saveState();
+  var lE=document.getElementById('page-livetrades'),lbE=document.getElementById('page-leaderboard');
+  if(lE&&lE.classList.contains('active'))await renderLiveTrades();
+  if(lbE&&lbE.classList.contains('active'))await renderLeaderboard();
+}
+async function renderLiveTrades(){
+  var con=document.getElementById('live-table-container'),cE=document.getElementById('live-count');
+  if(!con)return;
+  if(typeof window.storage==='undefined'){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#9888;&#65039;</div>Shared storage unavailable.</div>';return;}
+  try{
+    var keys=await window.storage.list('live:',true);
+    if(!keys||!keys.keys||!keys.keys.length){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#128225;</div>No live trades yet.</div>';if(cE)cE.textContent='0 positions';return;}
+    var all=[];
+    for(var i=0;i<keys.keys.length;i++){try{var r=await window.storage.get(keys.keys[i],true);if(!r)continue;var arr=JSON.parse(r.value);if(Array.isArray(arr))arr.filter(function(p){return Date.now()-p.savedAt<60000;}).forEach(function(p){all.push(p);});}catch(e2){}}
+    if(cE)cE.textContent=all.length+' position'+(all.length!==1?'s':'');
+    if(!all.length){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#128225;</div>No live trades right now.</div>';return;}
+    all.sort(function(a,b){return Math.abs(b.pnl)-Math.abs(a.pnl);});
+    var h='<div class="live-table-wrap"><table class="live-table"><thead><tr><th>Trader</th><th>Item</th><th>Dir</th><th>Lev</th><th>Entry</th><th>Now</th><th>SL</th><th>TP</th><th>P&amp;L</th></tr></thead><tbody>';
+    all.forEach(function(pos){
+      var isMe=pos.username===myUsername,pc=pos.pnl>=0?'lt-pnl-pos':'lt-pnl-neg';
+      h+='<tr'+(isMe?' class="me-row"':'')+'>'+
+        '<td><div class="lt-name">'+pos.username+(isMe?' <span class="lb-you-tag">you</span>':'')+'</div><div class="lt-wallet">'+fmtWallet(pos.walletAddress)+'</div></td>'+
+        '<td>'+pos.itemIcon+' '+pos.itemName+'</td>'+
+        '<td><span class="lt-badge '+pos.direction+'">'+pos.direction.toUpperCase()+'</span></td>'+
+        '<td>'+pos.leverage+'x</td><td>'+fmt(pos.entryPrice)+'</td><td>'+fmt(pos.currentPrice)+'</td>'+
+        '<td>'+(pos.sl!=null?'<span style="color:#ff9999">'+fmt(pos.sl)+'</span>':'<span style="color:var(--text-dim)">&mdash;</span>')+'</td>'+
+        '<td>'+(pos.tp!=null?'<span style="color:#99ffcc">'+fmt(pos.tp)+'</span>':'<span style="color:var(--text-dim)">&mdash;</span>')+'</td>'+
+        '<td class="'+pc+'">'+fmtPnl(pos.pnl)+' PvE</td></tr>';
+    });
+    h+='</tbody></table></div>';con.innerHTML=h;
+  }catch(e){console.warn('Live trades error:',e);}
+}
+async function renderLeaderboard(){
+  var con=document.getElementById('lb-table-container');
+  if(!con)return;
+  if(typeof window.storage==='undefined'){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#9888;&#65039;</div>Shared storage unavailable.</div>';return;}
+  try{
+    var keys=await window.storage.list('lb:',true);
+    if(!keys||!keys.keys||!keys.keys.length){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#127942;</div>No players yet.</div>';return;}
+    var players=[];
+    for(var i=0;i<keys.keys.length;i++){try{var r=await window.storage.get(keys.keys[i],true);if(r)players.push(JSON.parse(r.value));}catch(e2){}}
+    players.sort(function(a,b){return b.totalPnl-a.totalPnl;});
+    var medals=['&#129351;','&#129352;','&#129353;'];
+    var h='<div class="lb-table-wrap"><table class="lb-table"><thead><tr><th>#</th><th>Trader</th><th>Wallet</th><th>Open</th><th style="text-align:right">Total PvE</th><th style="text-align:right">P&amp;L</th></tr></thead><tbody>';
+    players.forEach(function(p,idx){
+      var isMe=p.username===myUsername,rank=idx+1;
+      var rs=rank<=3?medals[idx]:'#'+rank,pc=p.totalPnl>=0?'pos':'neg';
+      h+='<tr'+(isMe?' class="me-row"':'')+'>'+
+        '<td class="lb-rank-cell">'+rs+'</td>'+
+        '<td><div class="lb-uname">'+p.username+(isMe?' <span class="lb-you-tag">you</span>':'')+'</div></td>'+
+        '<td class="lb-wallet-cell">'+fmtWallet(p.walletAddress)+'</td>'+
+        '<td style="text-align:center;font-size:.72rem;color:var(--text-dim)">'+(p.positions||0)+'</td>'+
+        '<td class="lb-wealth-cell">'+fmt(Math.round(p.totalWealth))+' PvE</td>'+
+        '<td class="lb-pnl-cell '+pc+'">'+fmtPnl(Math.round(p.totalPnl))+'</td></tr>';
+    });
+    h+='</tbody></table></div>';con.innerHTML=h;
+  }catch(e){console.warn('Leaderboard error:',e);}
+}
+function showPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');
+  var pages=['market','portfolio','livetrades','leaderboard','history'];
+  var idx=pages.indexOf(name);if(idx>=0)document.querySelectorAll('.tab')[idx].classList.add('active');
+  if(name==='history')renderHistory();
+  if(name==='livetrades'){saveState().then(renderLiveTrades);}
+  if(name==='leaderboard'){saveState().then(renderLeaderboard);}
+}
+window.addEventListener('load',async function(){
+  try{
+    var su=await window.storage.get('username'),sw=await window.storage.get('walletAddress');
+    if(su&&su.value){
+      myUsername=su.value;if(sw&&sw.value)myWalletAddress=sw.value;
+      if(isTournamentOpen()){enterGame();return;}
+      document.getElementById('cd-msg').textContent='✓ Welcome back, '+myUsername+'. Waiting for open…';
+    }
+  }catch(e){}
+  startGateCountdown();
+});
+
 </script>
 </body>
 </html>
