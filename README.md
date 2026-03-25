@@ -400,12 +400,13 @@
   .toast.tp-hit{border-color:#6bff9e;color:#aaffcc}
 
   .page{display:none}.page.active{display:block}
+  .app-hidden{display:none!important}
   ::-webkit-scrollbar{width:4px}
   ::-webkit-scrollbar-track{background:var(--bg)}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
   /* COUNTDOWN GATE */
-  #gate{position:fixed;inset:0;z-index:9000;background:var(--bg);
+  #gate{position:fixed;inset:0;z-index:9000;background:#1a0f05;background-color:#1a0f05;
     background-image:radial-gradient(ellipse at 20% 0%,rgba(100,60,10,.35) 0%,transparent 60%),
     radial-gradient(ellipse at 80% 100%,rgba(80,40,5,.35) 0%,transparent 60%);
     display:flex;align-items:center;justify-content:center;padding:20px}
@@ -537,7 +538,7 @@
 </div>
 
 <!-- BREAKING NEWS BANNER -->
-<div class="breaking-news" id="breaking-news">
+<div class="breaking-news app-hidden" id="breaking-news">
   <div class="bn-bar" id="bn-bar">
     <div class="bn-inner">
       <div class="bn-label" id="bn-label">📡</div>
@@ -553,6 +554,7 @@
   </div>
 </div>
 
+<div id="app-shell" class="app-hidden">
 <div class="header">
   <div class="header-title">⚔ Trade Together ⚔</div>
   <div class="header-subtitle">Leveraged Commodity Exchange</div>
@@ -735,6 +737,7 @@
 </div>
 
 <!-- MODAL -->
+</div><!-- end app-shell -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal">
     <div class="modal-handle"></div>
@@ -2310,9 +2313,129 @@ var saveTimer = null, myUsername = null, myWalletAddress = null;
 
 // ── Tournament open time ─────────────────────────────────────────────────────
 function ctOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?5:6;}
-function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),46,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
-function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),46,0));}
+
+// Tournament open: 4:06 PM CT
+function getTournamentOpen(){
+  var n=new Date();
+  var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),6,0));
+  if(n>=o)o=new Date(o.getTime()+86400000);
+  return o;
+}
+function isTournamentOpen(){
+  var n=new Date();
+  return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),6,0));
+}
+
+// Warning banner: 4:09 PM CT
+function getTournamentWarn(){
+  var n=new Date();
+  return new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),9,0));
+}
+function isTournamentWarnTime(){
+  var n=new Date();
+  return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),9,0));
+}
+
+// Tournament close: 4:10 PM CT
+function getTournamentClose(){
+  var n=new Date();
+  return new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),10,0));
+}
+function isTournamentClosed(){
+  var n=new Date();
+  return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),15+ctOff(),10,0));
+}
+
 function pad2(n){return n<10?'0'+n:''+n;}
+
+// Poll for warning + close events while game is running
+var tournamentWarnFired = false;
+var tournamentCloseFired = false;
+function checkTournamentEvents(){
+  if(!myUsername)return;
+  var now = new Date();
+
+  // 4:09 PM CT — show warning banner
+  if(!tournamentWarnFired && isTournamentWarnTime() && !isTournamentClosed()){
+    tournamentWarnFired = true;
+    var diff = Math.max(0, getTournamentClose() - now);
+    var secsLeft = Math.round(diff/1000);
+    showTournamentWarning(secsLeft);
+  }
+
+  // 4:10 PM CT — force close all trades
+  if(!tournamentCloseFired && isTournamentClosed()){
+    tournamentCloseFired = true;
+    forceTournamentClose();
+  }
+}
+
+function showTournamentWarning(secsLeft){
+  // Override the breaking news banner with the warning
+  var bar   = document.getElementById('bn-bar');
+  var label = document.getElementById('bn-label');
+  if(bar){
+    bar.style.background = 'linear-gradient(135deg,#7a4a00,#b8860b,#7a4a00)';
+    bar.style.borderBottomColor = '#f0c040';
+  }
+  if(label){ label.style.background='#8a6a00'; label.textContent='\u26a0\ufe0f Warning'; }
+  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 4:10 PM CT \u2014 1 minute remaining!';
+  document.getElementById('bn-sub').textContent      = 'All open positions will be settled automatically. Check the \ud83c\udfc6 Leaderboard tab for standings.';
+  document.getElementById('bn-countdown').textContent = secsLeft + 's';
+  document.getElementById('breaking-news').classList.add('show');
+
+  // Live countdown in the banner
+  var warnInterval = setInterval(function(){
+    var d = Math.max(0, getTournamentClose() - new Date());
+    var s = Math.round(d/1000);
+    var cEl = document.getElementById('bn-countdown');
+    if(cEl) cEl.textContent = s + 's';
+    if(d<=0) clearInterval(warnInterval);
+  }, 1000);
+}
+
+function forceTournamentClose(){
+  // Close all open positions at market price
+  if(positions.length > 0){
+    var totalPnl = 0;
+    positions.slice().forEach(function(pos){
+      var item = getItem(pos.itemId);
+      var pnl  = calcPnl(pos, item.price);
+      totalPnl += pnl;
+      recordTrade(pos, item.price, pnl, 'manual');
+      wallet += Math.max(0, pos.margin + pnl);
+    });
+    positions = [];
+    saveState();
+    renderAll();
+    showToast('Tournament ended \u2014 all trades closed! Final P&L: ' + fmtPnl(Math.round(totalPnl)) + ' PvE', totalPnl >= 0 ? 'tp-hit' : 'sl-hit');
+  }
+
+  // Update banner to closed state
+  var bar   = document.getElementById('bn-bar');
+  var label = document.getElementById('bn-label');
+  if(bar){
+    bar.style.background = 'linear-gradient(135deg,#0a2a0a,#1a4a1a,#0a2a0a)';
+    bar.style.borderBottomColor = '#27ae60';
+  }
+  if(label){ label.style.background='#1a5a1a'; label.textContent='\ud83c\udfc6 Final'; }
+  document.getElementById('bn-headline').textContent = '\ud83c\udfc6 Tournament has ended! All trades have been settled.';
+  document.getElementById('bn-sub').textContent      = 'View the \ud83c\udfc6 Leaderboard tab to see final standings and P&L rankings.';
+  document.getElementById('bn-countdown').textContent = '';
+  document.getElementById('breaking-news').classList.add('show');
+
+  // Disable all trade buttons
+  document.querySelectorAll('.btn-trade, .btn-close-all, #modal-btn-long, #modal-btn-short').forEach(function(btn){
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.style.cursor  = 'not-allowed';
+  });
+
+  // Auto-navigate to leaderboard after 3 seconds
+  setTimeout(function(){
+    showPage('leaderboard');
+  }, 3000);
+}
 
 var cdInt = null;
 function startGateCountdown(){
@@ -2370,23 +2493,69 @@ async function doRegister(){
   btn.disabled=true;btn.textContent='Checking\u2026';
   try{
     var userKey = safeKey(user.toLowerCase());
-    var walKey  = 'w_'+safeKey(wal.toLowerCase().replace(/[^a-z0-9]/g,''));
-    // Check username taken
+    // Wallet key: strip all non-alphanumeric for safe storage key
+    var walStripped = wal.toLowerCase().replace(/[^a-z0-9]/g,'');
+    var walKey = 'w_'+walStripped;
+
+    // Check username not already taken
     var existing = await fbGet('accounts/'+userKey);
-    if(existing){err.textContent='Username already taken.';btn.disabled=false;btn.textContent='Create Account \u2192';return;}
-    // Check wallet taken
+    if(existing){
+      err.textContent='Username already taken. Choose another.';
+      btn.disabled=false;btn.textContent='Create Account \u2192';return;
+    }
+
+    // Check wallet not already used — check both the index key AND scan accounts for raw match
     var walOwner = await fbGet('wallets/'+walKey);
-    if(walOwner){err.textContent='Wallet already linked to another account.';btn.disabled=false;btn.textContent='Create Account \u2192';return;}
-    // Create account
+    if(walOwner){
+      err.textContent='This wallet address is already linked to another account.';
+      btn.disabled=false;btn.textContent='Create Account \u2192';return;
+    }
+    // Secondary check: scan all accounts for same wallet (case-insensitive raw match)
+    var allAccounts = await fbGet('accounts');
+    if(allAccounts){
+      var walLower = wal.toLowerCase().trim();
+      var dupe = Object.values(allAccounts).some(function(a){
+        return a && a.wallet && a.wallet.toLowerCase().trim()===walLower;
+      });
+      if(dupe){
+        err.textContent='This wallet address is already linked to another account.';
+        btn.disabled=false;btn.textContent='Create Account \u2192';return;
+      }
+    }
+
+    // Create account record
     var hash = await hashPw(pw);
-    await fbSet('accounts/'+userKey, {username:user, passwordHash:hash, wallet:wal, createdAt:Date.now()});
+    var now  = Date.now();
+    await fbSet('accounts/'+userKey, {
+      username:user, passwordHash:hash, wallet:wal,
+      createdAt:now, startingBalance:STARTING_GP
+    });
+    // Register wallet index to prevent duplicates
     await fbSet('wallets/'+walKey, userKey);
+
+    // Pre-save starting balance of 10,000 PvE to Firebase so it's ready at unlock
+    await fbSet('balances/'+userKey, {
+      username:user, wallet:wal,
+      balance:STARTING_GP, createdAt:now, initialized:true
+    });
+
     myUsername=user; myWalletAddress=wal;
     localStorage.setItem('tt_username', myUsername);
     localStorage.setItem('tt_wallet',   myWalletAddress);
+    // Also persist starting wallet balance locally so it's instant on enterGame
+    var initState={
+      wallet:STARTING_GP, positions:[], tradeHistory:[], posIdCounter:0,
+      tickCount:0, chartMode:'candle', nextShiftAt:TREND_SHIFT_TICKS,
+      sessionBoundaries:[], items:[], savedAt:now,
+      username:user, walletAddress:wal,
+      totalWealth:STARTING_GP, totalPnl:0
+    };
+    localStorage.setItem(SAVE_KEY+':'+user, JSON.stringify(initState));
+
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
-    document.getElementById('cd-msg').textContent='\u2713 Account created! Welcome, '+user+'.';
+    var msg = document.getElementById('cd-msg');
+    if(msg) msg.textContent='\u2713 Account created! 10,000 PvE loaded. Welcome, '+user+'.';
   }catch(e){
     err.textContent='Registration failed: '+(e&&e.message?e.message:'check console');
     console.error('Register error:',e);
@@ -2419,11 +2588,16 @@ async function doLogin(){
 
 function enterGame(){
   document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app-shell').classList.remove('app-hidden');
+  document.getElementById('breaking-news').classList.remove('app-hidden');
   loadState().then(function(restored){
     renderAll(); saveState();
     setInterval(tick, TICK_MS);
     setInterval(saveState, 10000);
     setInterval(syncShared, 4000);
+    setInterval(checkTournamentEvents, 5000); // check every 5s for warning/close
+    // Run immediately in case we're already past a threshold
+    checkTournamentEvents();
     window.addEventListener('resize', function(){ renderMarket(); });
     var a=document.getElementById('wallet-addr-display');
     if(a&&myWalletAddress)a.textContent=fmtWallet(myWalletAddress);
@@ -2470,23 +2644,43 @@ async function saveState(){
 async function loadState(){
   if(!myUsername)return false;
   try{
+    // Try localStorage first (fast)
     var raw=localStorage.getItem(SAVE_KEY+':'+myUsername);
-    if(!raw)return false;
-    var s=JSON.parse(raw);
-    if(!s||typeof s.wallet!=='number')return false;
-    wallet=s.wallet;positions=s.positions||[];tradeHistory=s.tradeHistory||[];
-    posIdCounter=s.posIdCounter||0;tickCount=s.tickCount||0;chartMode=s.chartMode||'candle';
-    nextShiftAt=s.nextShiftAt||TREND_SHIFT_TICKS;sessionBoundaries=s.sessionBoundaries||[];
-    if(s.walletAddress)myWalletAddress=s.walletAddress;
-    if(s.items)s.items.forEach(function(sn){
-      var it=getItem(sn.id);if(!it)return;
-      it.price=sn.price||it.price;it.trend=sn.trend||it.trend;it.volatility=sn.volatility||it.volatility;
-      if(sn.history&&sn.history.length)it.history=sn.history;
-      if(sn.candles&&sn.candles.length)it.candles=sn.candles;
-      lastPrices[it.id]=it.price;
-    });
-    return true;
-  }catch(e){return false;}
+    if(raw){
+      var s=JSON.parse(raw);
+      if(s&&typeof s.wallet==='number'){
+        wallet=s.wallet;positions=s.positions||[];tradeHistory=s.tradeHistory||[];
+        posIdCounter=s.posIdCounter||0;tickCount=s.tickCount||0;chartMode=s.chartMode||'candle';
+        nextShiftAt=s.nextShiftAt||TREND_SHIFT_TICKS;sessionBoundaries=s.sessionBoundaries||[];
+        if(s.walletAddress)myWalletAddress=s.walletAddress;
+        if(s.items)s.items.forEach(function(sn){
+          var it=getItem(sn.id);if(!it)return;
+          it.price=sn.price||it.price;it.trend=sn.trend||it.trend;it.volatility=sn.volatility||it.volatility;
+          if(sn.history&&sn.history.length)it.history=sn.history;
+          if(sn.candles&&sn.candles.length)it.candles=sn.candles;
+          lastPrices[it.id]=it.price;
+        });
+        return true;
+      }
+    }
+    // No local state — check Firebase for pre-saved balance (registered on another device)
+    var userKey = safeKey(myUsername.toLowerCase());
+    var fbBal = await fbGet('balances/'+userKey);
+    if(fbBal&&fbBal.initialized){
+      wallet = typeof fbBal.balance==='number' ? fbBal.balance : STARTING_GP;
+      // Save to localStorage so next load is instant
+      var initState={
+        wallet:wallet,positions:[],tradeHistory:[],posIdCounter:0,
+        tickCount:0,chartMode:'candle',nextShiftAt:TREND_SHIFT_TICKS,
+        sessionBoundaries:[],items:[],savedAt:Date.now(),
+        username:myUsername,walletAddress:myWalletAddress,
+        totalWealth:wallet,totalPnl:wallet-STARTING_GP
+      };
+      localStorage.setItem(SAVE_KEY+':'+myUsername, JSON.stringify(initState));
+      return true;
+    }
+    return false;
+  }catch(e){console.warn('loadState error:',e);return false;}
 }
 
 function resetState(){
