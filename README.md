@@ -2273,14 +2273,48 @@ function resetFundsAndHistory() {
   showToast('Fresh start! 10,000 PvE loaded.', 'tp-hit');
 }
 
-// AUTH & GATE
-var SAVE_KEY='tradeTogether_v1',ACCOUNTS_KEY='tt_accounts',WALLET_IDX_KEY='tt_wallets';
-var saveTimer=null,myUsername=null,myWalletAddress=null;
+// ═══ FIREBASE CONFIG ════════════════════════════════════════════════════════
+// Free Firebase project — replace with your own if desired
+const FB_URL = 'https://trade-together-default-rtdb.firebaseio.com';
+
+async function fbGet(path) {
+  try {
+    var r = await fetch(FB_URL + '/' + path + '.json');
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+async function fbSet(path, data) {
+  try {
+    var r = await fetch(FB_URL + '/' + path + '.json', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    return r.ok;
+  } catch(e) { return false; }
+}
+async function fbGetAll(path) {
+  // Returns object of all children at path
+  try {
+    var r = await fetch(FB_URL + '/' + path + '.json');
+    if (!r.ok) return {};
+    var d = await r.json();
+    return d || {};
+  } catch(e) { return {}; }
+}
+
+// ═══ AUTH & GATE ════════════════════════════════════════════════════════════
+var SAVE_KEY = 'tradeTogether_v1';
+var saveTimer = null, myUsername = null, myWalletAddress = null;
+
+// ── Tournament open time ─────────────────────────────────────────────────────
 function etOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?4:5;}
 function getTournamentOpen(){var n=new Date();var o=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),16+etOff(),5,0));if(n>=o)o=new Date(o.getTime()+86400000);return o;}
 function isTournamentOpen(){var n=new Date();return n>=new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),16+etOff(),5,0));}
 function pad2(n){return n<10?'0'+n:''+n;}
-var cdInt=null;
+
+var cdInt = null;
 function startGateCountdown(){
   clearInterval(cdInt);
   function t(){
@@ -2313,81 +2347,92 @@ document.addEventListener('DOMContentLoaded',function(){
   ['login-user','login-pass'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});});
   ['reg-user','reg-pass','reg-pass2','reg-wallet'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')doRegister();});});
 });
-async function hashPw(pw){try{var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}catch(e){var h=0;for(var i=0;i<pw.length;i++)h=(Math.imul(31,h)+pw.charCodeAt(i))|0;return 'fb_'+Math.abs(h).toString(16);}}
-function valWallet(a){return !!(a&&a.trim().length>=8);}
-function fmtWallet(a){if(!a)return '';if(a.length<=12)return a;return a.slice(0,6)+'…'+a.slice(-4);}
-async function getAccounts(){try{var r=await window.storage.get(ACCOUNTS_KEY,true);return r?JSON.parse(r.value):{};}catch(e){return {};}}
-async function getWalletIdx(){try{var r=await window.storage.get(WALLET_IDX_KEY,true);return r?JSON.parse(r.value):{};}catch(e){return {};}}
+
+async function hashPw(pw){
+  try{var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}
+  catch(e){var h=0;for(var i=0;i<pw.length;i++)h=(Math.imul(31,h)+pw.charCodeAt(i))|0;return 'fb_'+Math.abs(h).toString(16);}
+}
+function fmtWallet(a){if(!a)return '';if(a.length<=12)return a;return a.slice(0,6)+'\u2026'+a.slice(-4);}
+function safeKey(s){return s.replace(/[^a-zA-Z0-9_-]/g,'_');}
+
 async function doRegister(){
   var btn=document.getElementById('reg-btn'),err=document.getElementById('reg-err');
-  var user=document.getElementById('reg-user').value.trim(),pw=document.getElementById('reg-pass').value;
-  var pw2=document.getElementById('reg-pass2').value,wal=document.getElementById('reg-wallet').value.trim();
+  var user=document.getElementById('reg-user').value.trim();
+  var pw=document.getElementById('reg-pass').value;
+  var pw2=document.getElementById('reg-pass2').value;
+  var wal=document.getElementById('reg-wallet').value.trim();
   err.textContent='';
   if(!user||user.length<2){err.textContent='Username must be at least 2 characters.';return;}
   if(!/^[a-zA-Z0-9_]+$/.test(user)){err.textContent='Letters, numbers and underscores only.';return;}
   if(!pw||pw.length<6){err.textContent='Password must be at least 6 characters.';return;}
   if(pw!==pw2){err.textContent='Passwords do not match.';return;}
-  if(!wal||wal.length<8){err.textContent='Wallet address is required (min 8 characters).';return;}
-  btn.disabled=true;btn.textContent='Checking…';
-  // Test storage availability first
-  if(typeof window.storage==='undefined'){
-    document.getElementById('reg-err').textContent='Storage unavailable in this environment.';
-    btn.disabled=false;btn.textContent='Create Account →';return;
-  }
+  if(!wal||wal.trim().length<8){err.textContent='Wallet address is required (min 8 chars).';return;}
+  btn.disabled=true;btn.textContent='Checking\u2026';
   try{
-    // Sanitize wallet for use as storage key — strip all non-alphanumeric chars
-    var walKey='w_'+wal.toLowerCase().replace(/[^a-z0-9]/g,'');
-    var ac=await getAccounts(),wi=await getWalletIdx();
-    if(ac[user.toLowerCase()]){err.textContent='Username already taken.';btn.disabled=false;btn.textContent='Create Account →';return;}
-    if(wi[walKey]){err.textContent='Wallet already linked to another account.';btn.disabled=false;btn.textContent='Create Account →';return;}
-    var hash=await hashPw(pw);
-    ac[user.toLowerCase()]={username:user,passwordHash:hash,wallet:wal,createdAt:Date.now()};
-    wi[walKey]=user.toLowerCase();
-    await window.storage.set(ACCOUNTS_KEY,JSON.stringify(ac),true);
-    await window.storage.set(WALLET_IDX_KEY,JSON.stringify(wi),true);
-    myUsername=user;myWalletAddress=wal;
-    await window.storage.set('tt_user_'+user.toLowerCase(),myUsername);
-    await window.storage.set('tt_addr_'+user.toLowerCase(),myWalletAddress);
+    var userKey = safeKey(user.toLowerCase());
+    var walKey  = 'w_'+safeKey(wal.toLowerCase().replace(/[^a-z0-9]/g,''));
+    // Check username taken
+    var existing = await fbGet('accounts/'+userKey);
+    if(existing){err.textContent='Username already taken.';btn.disabled=false;btn.textContent='Create Account \u2192';return;}
+    // Check wallet taken
+    var walOwner = await fbGet('wallets/'+walKey);
+    if(walOwner){err.textContent='Wallet already linked to another account.';btn.disabled=false;btn.textContent='Create Account \u2192';return;}
+    // Create account
+    var hash = await hashPw(pw);
+    await fbSet('accounts/'+userKey, {username:user, passwordHash:hash, wallet:wal, createdAt:Date.now()});
+    await fbSet('wallets/'+walKey, userKey);
+    myUsername=user; myWalletAddress=wal;
+    localStorage.setItem('tt_username', myUsername);
+    localStorage.setItem('tt_wallet',   myWalletAddress);
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
-    document.getElementById('cd-msg').textContent='✓ Account created! Welcome, '+user+'.';
+    document.getElementById('cd-msg').textContent='\u2713 Account created! Welcome, '+user+'.';
   }catch(e){
-    err.textContent='Registration failed: '+(e&&e.message?e.message:'unknown error');
-    console.error('Registration error:',e);
+    err.textContent='Registration failed: '+(e&&e.message?e.message:'check console');
+    console.error('Register error:',e);
   }
-  btn.disabled=false;btn.textContent='Create Account →';
+  btn.disabled=false;btn.textContent='Create Account \u2192';
 }
+
 async function doLogin(){
   var btn=document.getElementById('login-btn'),err=document.getElementById('login-err');
-  var user=document.getElementById('login-user').value.trim(),pw=document.getElementById('login-pass').value;
+  var user=document.getElementById('login-user').value.trim();
+  var pw=document.getElementById('login-pass').value;
   err.textContent='';
   if(!user){err.textContent='Enter your username.';return;}
   if(!pw){err.textContent='Enter your password.';return;}
-  btn.disabled=true;btn.textContent='Signing in…';
+  btn.disabled=true;btn.textContent='Signing in\u2026';
   try{
-    var ac=await getAccounts(),rec=ac[user.toLowerCase()];
-    if(!rec){err.textContent='Username not found.';btn.disabled=false;btn.textContent='Sign In →';return;}
-    if(await hashPw(pw)!==rec.passwordHash){err.textContent='Incorrect password.';btn.disabled=false;btn.textContent='Sign In →';return;}
-    myUsername=rec.username;myWalletAddress=rec.wallet;
-    await window.storage.set('tt_user_'+myUsername.toLowerCase(),myUsername);
-    await window.storage.set('tt_addr_'+myUsername.toLowerCase(),myWalletAddress);
+    var userKey = safeKey(user.toLowerCase());
+    var record  = await fbGet('accounts/'+userKey);
+    if(!record){err.textContent='Username not found.';btn.disabled=false;btn.textContent='Sign In \u2192';return;}
+    if(await hashPw(pw)!==record.passwordHash){err.textContent='Incorrect password.';btn.disabled=false;btn.textContent='Sign In \u2192';return;}
+    myUsername=record.username; myWalletAddress=record.wallet;
+    localStorage.setItem('tt_username', myUsername);
+    localStorage.setItem('tt_wallet',   myWalletAddress);
     closeAuthModal();
     if(isTournamentOpen()){enterGame();return;}
-    document.getElementById('cd-msg').textContent='✓ Signed in as '+myUsername+'. Waiting for open…';
-  }catch(e){err.textContent='Login failed. Try again.';console.error(e);}
-  btn.disabled=false;btn.textContent='Sign In →';
+    document.getElementById('cd-msg').textContent='\u2713 Signed in as '+myUsername+'. Waiting for open\u2026';
+  }catch(e){err.textContent='Login failed: '+(e&&e.message?e.message:'check console');console.error(e);}
+  btn.disabled=false;btn.textContent='Sign In \u2192';
 }
+
 function enterGame(){
   document.getElementById('gate').classList.add('hidden');
   loadState().then(function(restored){
-    renderAll();saveState();
-    setInterval(tick,TICK_MS);setInterval(saveState,10000);setInterval(syncShared,4000);
-    window.addEventListener('resize',function(){renderMarket();});
-    var a=document.getElementById('wallet-addr-display');if(a&&myWalletAddress)a.textContent=fmtWallet(myWalletAddress);
-    if(!restored)showToast('Welcome, '+myUsername+'! 10,000 PvE ready.','tp-hit');
+    renderAll(); saveState();
+    setInterval(tick, TICK_MS);
+    setInterval(saveState, 10000);
+    setInterval(syncShared, 4000);
+    window.addEventListener('resize', function(){ renderMarket(); });
+    var a=document.getElementById('wallet-addr-display');
+    if(a&&myWalletAddress)a.textContent=fmtWallet(myWalletAddress);
+    if(!restored) showToast('Welcome, '+myUsername+'! 10,000 PvE ready.','tp-hit');
     else showToast('Welcome back, '+myUsername+'!','tp-hit');
   });
 }
+
+// ═══ SAVE / LOAD / RESET ════════════════════════════════════════════════════
 async function saveState(){
   if(!myUsername)return;
   try{
@@ -2395,56 +2440,100 @@ async function saveState(){
     var op=0;positions.forEach(function(p){op+=calcPnl(p,getItem(p.itemId).price);});
     var lk=0;positions.forEach(function(p){lk+=p.margin;});
     var wealth=wallet+lk+op;
-    var state={wallet:wallet,positions:positions,tradeHistory:tradeHistory,posIdCounter:posIdCounter,tickCount:tickCount,chartMode:chartMode,nextShiftAt:nextShiftAt,sessionBoundaries:sessionBoundaries,items:snaps,savedAt:Date.now(),username:myUsername,walletAddress:myWalletAddress,totalWealth:wealth,totalPnl:wealth-STARTING_GP};
-    await window.storage.set(SAVE_KEY+':'+myUsername,JSON.stringify(state));
-    await window.storage.set('lb:'+myUsername,JSON.stringify({username:myUsername,walletAddress:myWalletAddress,totalWealth:wealth,totalPnl:wealth-STARTING_GP,positions:positions.length,savedAt:Date.now()}),true);
-    var live=positions.map(function(pos){var item=getItem(pos.itemId);return{id:pos.id,username:myUsername,walletAddress:myWalletAddress,itemId:pos.itemId,itemName:item.name,itemIcon:item.icon,direction:pos.direction,leverage:pos.leverage,entryPrice:pos.entryPrice,currentPrice:item.price,margin:pos.margin,pnl:Math.round(calcPnl(pos,item.price)),sl:pos.sl,tp:pos.tp,savedAt:Date.now()};});
-    await window.storage.set('live:'+myUsername,JSON.stringify(live),true);
+    var state={wallet:wallet,positions:positions,tradeHistory:tradeHistory,posIdCounter:posIdCounter,
+      tickCount:tickCount,chartMode:chartMode,nextShiftAt:nextShiftAt,sessionBoundaries:sessionBoundaries,
+      items:snaps,savedAt:Date.now(),username:myUsername,walletAddress:myWalletAddress,
+      totalWealth:wealth,totalPnl:wealth-STARTING_GP};
+    // Personal state saved to localStorage (fast, no network)
+    localStorage.setItem(SAVE_KEY+':'+myUsername, JSON.stringify(state));
+    // Shared leaderboard + live positions via Firebase
+    var userKey = safeKey(myUsername.toLowerCase());
+    await fbSet('leaderboard/'+userKey, {
+      username:myUsername, walletAddress:myWalletAddress,
+      totalWealth:wealth, totalPnl:wealth-STARTING_GP,
+      positions:positions.length, savedAt:Date.now()
+    });
+    var live=positions.map(function(pos){
+      var item=getItem(pos.itemId);
+      return{id:pos.id,username:myUsername,walletAddress:myWalletAddress,
+             itemId:pos.itemId,itemName:item.name,itemIcon:item.icon,
+             direction:pos.direction,leverage:pos.leverage,entryPrice:pos.entryPrice,
+             currentPrice:item.price,margin:pos.margin,pnl:Math.round(calcPnl(pos,item.price)),
+             sl:pos.sl,tp:pos.tp,savedAt:Date.now()};
+    });
+    await fbSet('live/'+userKey, live.length ? live : null);
     var ind=document.getElementById('save-indicator');
-    if(ind){ind.style.color='rgba(39,174,96,.8)';ind.textContent='💾 Saved';setTimeout(function(){ind.style.color='rgba(201,169,110,.4)';ind.textContent='💾 Auto-saving';},1500);}
+    if(ind){ind.style.color='rgba(39,174,96,.8)';ind.textContent='&#128190; Saved';setTimeout(function(){ind.style.color='rgba(201,169,110,.4)';ind.textContent='&#128190; Auto-saving';},1500);}
   }catch(e){console.warn('Save failed:',e);}
 }
+
 async function loadState(){
   if(!myUsername)return false;
   try{
-    var r=await window.storage.get(SAVE_KEY+':'+myUsername);if(!r)return false;
-    var s=JSON.parse(r.value);if(!s||typeof s.wallet!=='number')return false;
-    wallet=s.wallet;positions=s.positions||[];tradeHistory=s.tradeHistory||[];posIdCounter=s.posIdCounter||0;tickCount=s.tickCount||0;chartMode=s.chartMode||'candle';nextShiftAt=s.nextShiftAt||TREND_SHIFT_TICKS;sessionBoundaries=s.sessionBoundaries||[];
+    var raw=localStorage.getItem(SAVE_KEY+':'+myUsername);
+    if(!raw)return false;
+    var s=JSON.parse(raw);
+    if(!s||typeof s.wallet!=='number')return false;
+    wallet=s.wallet;positions=s.positions||[];tradeHistory=s.tradeHistory||[];
+    posIdCounter=s.posIdCounter||0;tickCount=s.tickCount||0;chartMode=s.chartMode||'candle';
+    nextShiftAt=s.nextShiftAt||TREND_SHIFT_TICKS;sessionBoundaries=s.sessionBoundaries||[];
     if(s.walletAddress)myWalletAddress=s.walletAddress;
-    if(s.items)s.items.forEach(function(sn){var it=getItem(sn.id);if(!it)return;it.price=sn.price||it.price;it.trend=sn.trend||it.trend;it.volatility=sn.volatility||it.volatility;if(sn.history&&sn.history.length)it.history=sn.history;if(sn.candles&&sn.candles.length)it.candles=sn.candles;lastPrices[it.id]=it.price;});
+    if(s.items)s.items.forEach(function(sn){
+      var it=getItem(sn.id);if(!it)return;
+      it.price=sn.price||it.price;it.trend=sn.trend||it.trend;it.volatility=sn.volatility||it.volatility;
+      if(sn.history&&sn.history.length)it.history=sn.history;
+      if(sn.candles&&sn.candles.length)it.candles=sn.candles;
+      lastPrices[it.id]=it.price;
+    });
     return true;
   }catch(e){return false;}
 }
+
 function resetState(){
   if(!confirm('Reset everything and start with 10,000 PvE? This cannot be undone.'))return;
-  wallet=STARTING_GP;positions=[];tradeHistory=[];posIdCounter=0;tickCount=0;chartMode='candle';nextShiftAt=TREND_SHIFT_TICKS;
-  ITEMS.forEach(function(item){item.price=item.basePrice||item.price;item.history=[];item.candles=[];item.candleTickBuf=[];lastPrices[item.id]=item.price;for(var i=0;i<20;i++)item.history.push(item.price);for(var j=0;j<15;j++)item.candles.push({o:item.price,h:item.price,l:item.price,c:item.price});});
+  wallet=STARTING_GP;positions=[];tradeHistory=[];posIdCounter=0;
+  tickCount=0;chartMode='candle';nextShiftAt=TREND_SHIFT_TICKS;
+  ITEMS.forEach(function(item){
+    item.price=item.basePrice||item.price;item.history=[];item.candles=[];item.candleTickBuf=[];
+    lastPrices[item.id]=item.price;
+    for(var i=0;i<20;i++)item.history.push(item.price);
+    for(var j=0;j<15;j++)item.candles.push({o:item.price,h:item.price,l:item.price,c:item.price});
+  });
   renderAll();saveState();showToast('Fresh start! 10,000 PvE loaded.','buy');
 }
+
 function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveState,5000);}
+
+// ═══ SHARED SYNC ════════════════════════════════════════════════════════════
 async function syncShared(){
   await saveState();
-  var lE=document.getElementById('page-livetrades'),lbE=document.getElementById('page-leaderboard');
-  if(lE&&lE.classList.contains('active'))await renderLiveTrades();
-  if(lbE&&lbE.classList.contains('active'))await renderLeaderboard();
+  var liveEl=document.getElementById('page-livetrades');
+  var lbEl=document.getElementById('page-leaderboard');
+  if(liveEl&&liveEl.classList.contains('active'))await renderLiveTrades();
+  if(lbEl&&lbEl.classList.contains('active'))await renderLeaderboard();
 }
+
 async function renderLiveTrades(){
   var con=document.getElementById('live-table-container'),cE=document.getElementById('live-count');
   if(!con)return;
-  if(typeof window.storage==='undefined'){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#9888;&#65039;</div>Shared storage unavailable.</div>';return;}
   try{
-    var keys=await window.storage.list('live:',true);
-    if(!keys||!keys.keys||!keys.keys.length){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#128225;</div>No live trades yet.</div>';if(cE)cE.textContent='0 positions';return;}
+    var allData=await fbGetAll('live');
     var all=[];
-    for(var i=0;i<keys.keys.length;i++){try{var r=await window.storage.get(keys.keys[i],true);if(!r)continue;var arr=JSON.parse(r.value);if(Array.isArray(arr))arr.filter(function(p){return Date.now()-p.savedAt<60000;}).forEach(function(p){all.push(p);});}catch(e2){}}
+    Object.values(allData).forEach(function(arr){
+      if(!Array.isArray(arr))return;
+      arr.filter(function(p){return Date.now()-p.savedAt<60000;}).forEach(function(p){all.push(p);});
+    });
     if(cE)cE.textContent=all.length+' position'+(all.length!==1?'s':'');
     if(!all.length){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#128225;</div>No live trades right now.</div>';return;}
     all.sort(function(a,b){return Math.abs(b.pnl)-Math.abs(a.pnl);});
-    var h='<div class="live-table-wrap"><table class="live-table"><thead><tr><th>Trader</th><th>Item</th><th>Dir</th><th>Lev</th><th>Entry</th><th>Now</th><th>SL</th><th>TP</th><th>P&amp;L</th></tr></thead><tbody>';
+    var h='<div class="live-table-wrap"><table class="live-table"><thead><tr>';
+    h+='<th>Trader</th><th>Item</th><th>Dir</th><th>Lev</th><th>Entry</th><th>Now</th><th>SL</th><th>TP</th><th>P&amp;L</th>';
+    h+='</tr></thead><tbody>';
     all.forEach(function(pos){
       var isMe=pos.username===myUsername,pc=pos.pnl>=0?'lt-pnl-pos':'lt-pnl-neg';
       h+='<tr'+(isMe?' class="me-row"':'')+'>'+
-        '<td><div class="lt-name">'+pos.username+(isMe?' <span class="lb-you-tag">you</span>':'')+'</div><div class="lt-wallet">'+fmtWallet(pos.walletAddress)+'</div></td>'+
+        '<td><div class="lt-name">'+pos.username+(isMe?' <span class="lb-you-tag">you</span>':'')+'</div>'+
+        '<div class="lt-wallet">'+fmtWallet(pos.walletAddress)+'</div></td>'+
         '<td>'+pos.itemIcon+' '+pos.itemName+'</td>'+
         '<td><span class="lt-badge '+pos.direction+'">'+pos.direction.toUpperCase()+'</span></td>'+
         '<td>'+pos.leverage+'x</td><td>'+fmt(pos.entryPrice)+'</td><td>'+fmt(pos.currentPrice)+'</td>'+
@@ -2452,21 +2541,23 @@ async function renderLiveTrades(){
         '<td>'+(pos.tp!=null?'<span style="color:#99ffcc">'+fmt(pos.tp)+'</span>':'<span style="color:var(--text-dim)">&mdash;</span>')+'</td>'+
         '<td class="'+pc+'">'+fmtPnl(pos.pnl)+' PvE</td></tr>';
     });
-    h+='</tbody></table></div>';con.innerHTML=h;
-  }catch(e){console.warn('Live trades error:',e);}
+    h+='</tbody></table></div>';
+    con.innerHTML=h;
+  }catch(e){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#128225;</div>Could not load live trades.</div>';console.warn(e);}
 }
+
 async function renderLeaderboard(){
   var con=document.getElementById('lb-table-container');
   if(!con)return;
-  if(typeof window.storage==='undefined'){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#9888;&#65039;</div>Shared storage unavailable.</div>';return;}
   try{
-    var keys=await window.storage.list('lb:',true);
-    if(!keys||!keys.keys||!keys.keys.length){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#127942;</div>No players yet.</div>';return;}
-    var players=[];
-    for(var i=0;i<keys.keys.length;i++){try{var r=await window.storage.get(keys.keys[i],true);if(r)players.push(JSON.parse(r.value));}catch(e2){}}
+    var allData=await fbGetAll('leaderboard');
+    var players=Object.values(allData).filter(function(p){return p&&p.username;});
+    if(!players.length){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#127942;</div>No players yet.</div>';return;}
     players.sort(function(a,b){return b.totalPnl-a.totalPnl;});
     var medals=['&#129351;','&#129352;','&#129353;'];
-    var h='<div class="lb-table-wrap"><table class="lb-table"><thead><tr><th>#</th><th>Trader</th><th>Wallet</th><th>Open</th><th style="text-align:right">Total PvE</th><th style="text-align:right">P&amp;L</th></tr></thead><tbody>';
+    var h='<div class="lb-table-wrap"><table class="lb-table"><thead><tr>';
+    h+='<th>#</th><th>Trader</th><th>Wallet</th><th>Open</th><th style="text-align:right">Total PvE</th><th style="text-align:right">P&amp;L</th>';
+    h+='</tr></thead><tbody>';
     players.forEach(function(p,idx){
       var isMe=p.username===myUsername,rank=idx+1;
       var rs=rank<=3?medals[idx]:'#'+rank,pc=p.totalPnl>=0?'pos':'neg';
@@ -2478,9 +2569,11 @@ async function renderLeaderboard(){
         '<td class="lb-wealth-cell">'+fmt(Math.round(p.totalWealth))+' PvE</td>'+
         '<td class="lb-pnl-cell '+pc+'">'+fmtPnl(Math.round(p.totalPnl))+'</td></tr>';
     });
-    h+='</tbody></table></div>';con.innerHTML=h;
-  }catch(e){console.warn('Leaderboard error:',e);}
+    h+='</tbody></table></div>';
+    con.innerHTML=h;
+  }catch(e){con.innerHTML='<div class="hist-empty"><div class="hist-empty-icon">&#127942;</div>Could not load leaderboard.</div>';console.warn(e);}
 }
+
 function showPage(name){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
@@ -2491,22 +2584,18 @@ function showPage(name){
   if(name==='livetrades'){saveState().then(renderLiveTrades);}
   if(name==='leaderboard'){saveState().then(renderLeaderboard);}
 }
-window.addEventListener('load',async function(){
-  try{
-    var su=await window.storage.get('username'),sw=await window.storage.get('walletAddress');
-    // Also try new key format
-    if(!su||!su.value){try{var keys=await window.storage.list('tt_user_');if(keys&&keys.keys&&keys.keys.length){su={value:(await window.storage.get(keys.keys[0])).value};}}catch(ke){}}
-    if(su&&su.value){
-      myUsername=su.value;
-      if(!sw||!sw.value){try{var aw=await window.storage.get('tt_addr_'+myUsername.toLowerCase());if(aw)sw=aw;}catch(ke){}}
-      if(sw&&sw.value)myWalletAddress=sw.value;
-      if(isTournamentOpen()){enterGame();return;}
-      document.getElementById('cd-msg').textContent='✓ Welcome back, '+myUsername+'. Waiting for open…';
-    }
-  }catch(e){}
+
+window.addEventListener('load', function(){
+  var savedUser   = localStorage.getItem('tt_username');
+  var savedWallet = localStorage.getItem('tt_wallet');
+  if(savedUser){
+    myUsername      = savedUser;
+    myWalletAddress = savedWallet || '';
+    if(isTournamentOpen()){enterGame();return;}
+    document.getElementById('cd-msg').textContent='\u2713 Welcome back, '+myUsername+'. Waiting for open\u2026';
+  }
   startGateCountdown();
 });
-
 </script>
 </body>
 </html>
