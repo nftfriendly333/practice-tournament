@@ -2275,7 +2275,7 @@ function resetFundsAndHistory() {
 
 // ═══ FIREBASE CONFIG ════════════════════════════════════════════════════════
 // Free Firebase project — replace with your own if desired
-const FB_URL = 'https://trade-together-default-rtdb.firebaseio.com';
+const FB_URL = 'https://practicetournament-3887d-default-rtdb.firebaseio.com/';
 
 async function fbGet(path) {
   try {
