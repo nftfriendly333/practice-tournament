@@ -1,3 +1,5 @@
+[practicetournament.html](https://github.com/user-attachments/files/26255249/practicetournament.html)
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -409,7 +411,7 @@
     background-image:radial-gradient(ellipse at 20% 0%,rgba(100,60,10,.35) 0%,transparent 60%),
     radial-gradient(ellipse at 80% 100%,rgba(80,40,5,.35) 0%,transparent 60%);
     display:flex;align-items:center;justify-content:center;padding:20px}
-  #gate.hidden{display:none}
+  #gate.hidden{display:none!important}
   .gate-box{text-align:center;max-width:360px;width:100%}
   .gate-logo{font-size:3rem;margin-bottom:10px;filter:drop-shadow(0 0 18px rgba(240,192,64,.4))}
   .gate-title{font-family:'Cinzel',serif;font-size:1.6rem;font-weight:700;color:var(--gold);letter-spacing:4px;text-shadow:0 0 24px rgba(240,192,64,.5);margin-bottom:4px}
@@ -2310,13 +2312,17 @@ async function fbGetAll(path) {
 async function wipeDatabaseOnce(){
   try{
     if(sessionStorage.getItem('tt_db_wiped'))return;
-    await fetch(FB_URL+'/.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:'null'});
-    Object.keys(localStorage).forEach(function(k){
-      if(k.startsWith('tradeTogether_v1') || k.startsWith('tt_'))
-        localStorage.removeItem(k);
-    });
+    // Mark wiped FIRST so even if fetch fails we don't retry endlessly
     sessionStorage.setItem('tt_db_wiped','1');
-    console.log('Database and local state wiped to clean slate.');
+    var r = await fetch(FB_URL+'/.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:'null'});
+    if(r && r.ok){
+      // Only clear localStorage keys from previous sessions (game state + old auth)
+      // Do NOT clear tt_username/tt_wallet as those may have just been written
+      Object.keys(localStorage).forEach(function(k){
+        if(k.startsWith('tradeTogether_v1')) localStorage.removeItem(k);
+      });
+      console.log('Database wiped to clean slate.');
+    }
   }catch(e){console.warn('DB wipe failed (network restricted):',e);}
 }
 // ═══ AUTH & GATE ════════════════════════════════════════════════════════════
@@ -2472,9 +2478,12 @@ function openAuthModal(panel){
 }
 function closeAuthModal(){
   document.getElementById('auth-overlay').classList.remove('open');
-  // Always ensure gate is showing after modal closes
+  // Always force gate visible — never let user see a blank page
   var gate = document.getElementById('gate');
-  if(gate) gate.classList.remove('hidden');
+  if(gate){
+    gate.classList.remove('hidden');
+    gate.style.display = 'flex';
+  }
   window.scrollTo(0,0);
 }
 function switchAuthPanel(panel){
