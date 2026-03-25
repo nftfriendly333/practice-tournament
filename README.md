@@ -1,4 +1,4 @@
-[practicetournament.html](https://github.com/user-attachments/files/26255410/practicetournament.html)
+[practicetournament.html](https://github.com/user-attachments/files/26255480/practicetournament.html)
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2311,9 +2311,9 @@ async function fbGetAll(path) {
 // ── ONE-TIME DB WIPE (runs once on first load after deployment) ──────────────
 async function wipeDatabaseOnce(){
   try{
-    if(sessionStorage.getItem('tt_db_wiped'))return;
+    if(sessionStorage.getItem('tt_db_wiped_v2'))return;
     // Mark wiped FIRST so even if fetch fails we don't retry endlessly
-    sessionStorage.setItem('tt_db_wiped','1');
+    sessionStorage.setItem('tt_db_wiped_v2','1');
     var r = await fetch(FB_URL+'/.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:'null'});
     if(r && r.ok){
       // Only clear localStorage keys from previous sessions (game state + old auth)
@@ -2332,28 +2332,28 @@ var saveTimer = null, myUsername = null, myWalletAddress = null;
 // ── Tournament open time ─────────────────────────────────────────────────────
 function etOff(){var n=new Date(),j=new Date(n.getFullYear(),0,1),l=new Date(n.getFullYear(),6,1);return n.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),l.getTimezoneOffset())?4:5;}
 
-// Tournament open: 6:10 PM ET on 3/25/2026 on 3/26/2025
+// Tournament open: 12:00 PM ET on 3/25/2026 on 3/26/2025
 function getTournamentOpen(){
-  return new Date(Date.UTC(2026,2,25,18+etOff(),10,0));
+  return new Date(Date.UTC(2026,2,26,12+etOff(),0,0));
 }
 function isTournamentOpen(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),10,0));
+  return new Date()>=new Date(Date.UTC(2026,2,26,12+etOff(),0,0));
 }
 
-// Warning banner: 6:13 PM ET on 3/25/2026
+// Warning banner: 12:58 PM ET on 3/25/2026
 function getTournamentWarn(){
-  return new Date(Date.UTC(2026,2,25,18+etOff(),13,0));
+  return new Date(Date.UTC(2026,2,26,12+etOff(),58,0));
 }
 function isTournamentWarnTime(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),13,0));
+  return new Date()>=new Date(Date.UTC(2026,2,26,12+etOff(),58,0));
 }
 
-// Tournament close: 6:15 PM ET on 3/25/2026
+// Tournament close: 1:00 PM ET on 3/25/2026
 function getTournamentClose(){
-  return new Date(Date.UTC(2026,2,25,18+etOff(),15,0));
+  return new Date(Date.UTC(2026,2,26,13+etOff(),0,0));
 }
 function isTournamentClosed(){
-  return new Date()>=new Date(Date.UTC(2026,2,25,18+etOff(),15,0));
+  return new Date()>=new Date(Date.UTC(2026,2,26,13+etOff(),0,0));
 }
 
 function pad2(n){return n<10?'0'+n:''+n;}
@@ -2389,7 +2389,7 @@ function showTournamentWarning(secsLeft){
     bar.style.borderBottomColor = '#f0c040';
   }
   if(label){ label.style.background='#8a6a00'; label.textContent='\u26a0\ufe0f Warning'; }
-  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 6:15 PM ET \u2014 1 minute remaining!';
+  document.getElementById('bn-headline').textContent = '\u23f1 All trades close at 1:00 PM ET \u2014 1 minute remaining!';
   document.getElementById('bn-sub').textContent      = 'All open positions will be settled automatically. Check the \ud83c\udfc6 Leaderboard tab for standings.';
   document.getElementById('bn-countdown').textContent = secsLeft + 's';
   document.getElementById('breaking-news').classList.add('show');
@@ -2433,13 +2433,6 @@ function forceTournamentClose(){
   document.getElementById('bn-sub').textContent      = 'View the \ud83c\udfc6 Leaderboard tab to see final standings and P&L rankings.';
   document.getElementById('bn-countdown').textContent = '';
   document.getElementById('breaking-news').classList.add('show');
-
-  // Disable all trade buttons
-  document.querySelectorAll('.btn-trade, .btn-close-all, #modal-btn-long, #modal-btn-short').forEach(function(btn){
-    btn.disabled = true;
-    btn.style.opacity = '0.4';
-    btn.style.cursor  = 'not-allowed';
-  });
 
   // Auto-navigate to leaderboard after 3 seconds
   setTimeout(function(){
@@ -2612,6 +2605,8 @@ async function doLogin(){
 }
 
 function enterGame(){
+  tournamentWarnFired = false;
+  tournamentCloseFired = false;
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('app-shell').classList.remove('app-hidden');
   document.getElementById('breaking-news').classList.remove('app-hidden');
